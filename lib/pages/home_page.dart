@@ -50,18 +50,19 @@ class _HomePageState extends State<HomePage> {
         ]
     ));
   }
-  void logout (){
-    FirebaseAuth.instance.signOut();
-  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar( 
-        title: const Text("Notes"),
+        title: null,
         actions: [
-          IconButton(onPressed: logout, icon: Icon(Icons.logout))
+          IconButton(onPressed: (){
+            //navigate to profile
+            Navigator.pushNamed(context,'/profile_page');
+          }, icon: Icon(Icons.account_circle))
         ],
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: null,
         ),
       floatingActionButton: FloatingActionButton(
         onPressed: openNoteBox,

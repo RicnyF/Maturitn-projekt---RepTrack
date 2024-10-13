@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/auth/auth.dart';
 import 'package:rep_track/firebase_options.dart';
+import 'package:rep_track/pages/profile_page.dart';
 import 'package:rep_track/theme/dark_mode.dart';
 import 'package:rep_track/theme/light_mode.dart';
 
@@ -24,6 +25,9 @@ class MyApp extends StatelessWidget {
       home: const AuthPage(),
       theme: lightMode,
       darkTheme: darkMode,
+      routes:{
+        '/profile_page':(context)=> const ProfilePage(),
+      }
     );
   }
 }

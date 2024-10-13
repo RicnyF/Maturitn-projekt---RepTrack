@@ -22,10 +22,18 @@ class _LoginPageState extends State<LoginPage> {
 
   //login method
   void login() async{
-  showDialog(context: context, builder: (context)=> const Center(
+    // loading circle
+    showDialog(context: context, builder: (context)=> const Center(
       child: CircularProgressIndicator(),
     )
     );
+    // check if fields are blank
+    if(emailController.text.isEmpty || passwordController.text.isEmpty){
+      if(mounted){
+      Navigator.pop(context);
+      displayMessageToUser("All fields must be filled", context);}
+    }
+    else{
     //try sign in
     try {
      await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text, 
@@ -40,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
     }
     }
   }
-
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

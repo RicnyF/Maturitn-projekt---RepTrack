@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/components/my_button.dart';
@@ -27,11 +28,17 @@ class _RegisterPageState extends State<RegisterPage> {
   //register method
   void register() async{
     // show loading circle
-    
     showDialog(context: context, builder: (context)=> const Center(
       child: CircularProgressIndicator(),
     )
     );
+    // check if fields are blank
+    if(usernameController.text.isEmpty || emailController.text.isEmpty || passwordController.text.isEmpty ||confirmPwController.text.isEmpty ){
+      if(mounted){
+      Navigator.pop(context);
+      displayMessageToUser("All fields must be filled", context);}
+    }
+    else{
     //passwords match
     if(passwordController.text != confirmPwController.text){
       Navigator.pop(context);
@@ -39,10 +46,13 @@ class _RegisterPageState extends State<RegisterPage> {
     }
     else{
     try{
+      UserCredential? userCredential=
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text,
          password: passwordController.text);
       
+      createUserDocument(userCredential);
+
     } on FirebaseAuthException catch (e){
       if(mounted){
       Navigator.pop(context);
@@ -51,6 +61,18 @@ class _RegisterPageState extends State<RegisterPage> {
     if(mounted){
       Navigator.pop(context);
       }
+    }
+    }
+    
+  }
+
+  // Create user document
+  Future<void> createUserDocument(UserCredential? userCredential) async{
+    if (userCredential != null && userCredential.user !=null){
+      await FirebaseFirestore.instance.collection("Users").doc(userCredential.user!.email).set({
+        'email': userCredential.user!.email,
+        'username': usernameController.text,
+      });
     }
   }
   @override
