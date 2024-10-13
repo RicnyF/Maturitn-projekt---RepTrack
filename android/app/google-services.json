@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "900141799717",
+    "project_id": "reptrack-64f1a",
+    "storage_bucket": "reptrack-64f1a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900141799717:android:b738dd9c10ea953f2862cc",
+        "android_client_info": {
+          "package_name": "com.example.rep_track"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGGX6fEON7FqMi5wRBkKY5SXCFITb67eY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900141799717:android:9e4b8cd21448de102862cc",
+        "android_client_info": {
+          "package_name": "com.ricny.reptrack_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGGX6fEON7FqMi5wRBkKY5SXCFITb67eY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
