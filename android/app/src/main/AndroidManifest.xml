@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    
+    <!-- Android 13 (API 33+) introduces new permission requirements -->
+    <!-- Add this if targeting Android 13+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <application
         android:label="rep_track"
         android:name="${applicationName}"
