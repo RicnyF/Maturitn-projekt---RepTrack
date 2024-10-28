@@ -17,7 +17,8 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   Uint8List? pickedImage;
-  
+  bool isLoading = false; 
+  final storageRef = FirebaseStorage.instance;
   // current logged in user
   final User ? currentUser = FirebaseAuth.instance.currentUser;
 
@@ -27,24 +28,60 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> editProfile(String username)async{
     
-    final ImagePicker picker = ImagePicker();
+   final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
-    final storageRef = FirebaseStorage.instance.ref();
-    final imageRef = storageRef.child('$username.jpg');
+    final imageRef = storageRef.ref().child('$username.jpg');
+    try{
     final imageBytes= await image.readAsBytes();
-    await imageRef.putData(imageBytes);
-
-    setState(() => pickedImage = imageBytes);
+    TaskSnapshot uploadTask =await imageRef.putData(imageBytes);
+    
+    }
+    
+    catch(e){
+      print("Error uploading immage: $e");
+    }
+    await getImageUrl();
+    setState(() {
+      
+        isLoading= true;
+    });
   }
 
   void logout (BuildContext context){
       FirebaseAuth.instance.signOut();
       Navigator.pop(context);
     }
-
+  late String imageUrl;
+  
+ 
   @override
-  Widget build(BuildContext context) {
+  void initState(){
+    super.initState();
+    imageUrl='';
+    getImageUrl();
+  }
+
+  Future<void> getImageUrl()async{
+    final userDoc = await getUserDetails();
+     Map<String, dynamic>? userData = userDoc.data();
+     final username= userData!['username'];    
+      if (userData.isNotEmpty) {
+      try {
+        final ref = storageRef.ref().child('$username.jpg');
+        final url = await ref.getDownloadURL();
+        setState((){
+          imageUrl = url;
+           // Update loading state// Update loading state
+        });
+      } catch (e) {
+        print("Could not fetch image URL: $e");
+      }
+     
+  }
+  }
+  
+  @override Widget  build(BuildContext context) {
     return Scaffold(
       appBar: AppBar( 
         title: null,
@@ -69,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
           }
           //data received
           else if (snapshot.hasData){
-            
+           
             Map<String, dynamic>? user = snapshot.data!.data();
             
             return Center(
@@ -78,42 +115,50 @@ class _ProfilePageState extends State<ProfilePage> {
                 Stack(alignment: Alignment.topRight,
                 children: 
                 [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    shape: BoxShape.rectangle,
-                   image: pickedImage != null
-                              ? DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: MemoryImage(pickedImage!), // Use MemoryImage
-                                )
-                              : DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage('images/default_profile.png'), // Default profile image
-                                ),
-                  ),
+                  
+                Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                height: 150,
+                width: 150,
+                loadingBuilder: (context, child, loadingProgress) {
+                  
+                  if (loadingProgress == null){
+                   isLoading=false;
+                    return child;
+                  }
+                  else{ 
+                   
+                    
+                  return Center(child: CircularProgressIndicator());}
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  
+                  return Text('Could not load image');})
+                ,
+                if(!isLoading)
+                Positioned (
+
+                    right: 5,
+                    top: 5,
+                    child: GestureDetector(
+                    onTap: ()=>editProfile(user!["username"]),
+                    child: Container( decoration: BoxDecoration(
+                      
+                  color: Theme.of(context).colorScheme.inversePrimary, // Button background color
+                  shape: BoxShape.circle, // Circular button
+                    
                 ),
-                Icon(
-                  Icons.account_box,size: 100, 
-                  color: Theme.of(context).colorScheme.secondary,),
-                
-                Positioned(
-                  right: 5,
-                  top: 5,
-                  child: GestureDetector(
-                  onTap: ()=>editProfile(user!["username"]),
-                  child: Container( decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.inversePrimary, // Button background color
-                shape: BoxShape.circle, // Circular button
-              ),
-              padding: EdgeInsets.all(4), // Padding around the icon
-              child: Icon(
-                Icons.edit,
-                color: Theme.of(context).colorScheme.primary,
-                size: 20, ),)
-                )
-                )
+                padding: EdgeInsets.all(4), // Padding around the icon
+                child: Icon(
+                  Icons.edit,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 20, ),)
+                  )
+                  )
                 ],),
+
+                
                 const Text("My Profile", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),),
                 const SizedBox(height: 20),
                 Row(

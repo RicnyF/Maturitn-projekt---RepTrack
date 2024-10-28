@@ -57,9 +57,16 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar( 
         title: null,
         actions: [
-          IconButton(onPressed: (){
+          
+          IconButton(onPressed: ()async {
             //navigate to profile
-            Navigator.pushNamed(context,'/profile_page');
+            showDialog(context: context, builder: (context){
+              return Center(child: CircularProgressIndicator());
+            });
+            await Navigator.pushNamed(context,'/profile_page');
+            if(context.mounted){
+            Navigator.of(context).pop();
+            }
           }, icon: Icon(Icons.account_circle))
         ],
         backgroundColor: null,

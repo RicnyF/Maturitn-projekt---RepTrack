@@ -1,6 +1,7 @@
 
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/auth/auth.dart';
 import 'package:rep_track/firebase_options.dart';
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return  MaterialApp(
+      
       debugShowCheckedModeBanner: false,
       home: const AuthPage(),
       theme: lightMode,
