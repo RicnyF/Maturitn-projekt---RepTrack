@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/components/my_boldtext.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:rep_track/helper/helper_functions.dart';
 
 class ProfilePage extends StatefulWidget {
   
@@ -34,7 +35,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final imageRef = storageRef.ref().child('$username.jpg');
     try{
     final imageBytes= await image.readAsBytes();
-    TaskSnapshot uploadTask =await imageRef.putData(imageBytes);
+    await imageRef.putData(imageBytes);
     
     }
     
@@ -42,10 +43,7 @@ class _ProfilePageState extends State<ProfilePage> {
       print("Error uploading immage: $e");
     }
     await getImageUrl();
-    setState(() {
-      
-        isLoading= true;
-    });
+   
   }
 
   void logout (BuildContext context){
@@ -63,6 +61,9 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> getImageUrl()async{
+    setState(() {
+    isLoading = true; // Set loading to true when fetching image URL
+  });
     final userDoc = await getUserDetails();
      Map<String, dynamic>? userData = userDoc.data();
      final username= userData!['username'];    
@@ -72,7 +73,7 @@ class _ProfilePageState extends State<ProfilePage> {
         final url = await ref.getDownloadURL();
         setState((){
           imageUrl = url;
-           // Update loading state// Update loading state
+         isLoading = false;
         });
       } catch (e) {
         print("Could not fetch image URL: $e");
@@ -84,7 +85,8 @@ class _ProfilePageState extends State<ProfilePage> {
   @override Widget  build(BuildContext context) {
     return Scaffold(
       appBar: AppBar( 
-        title: null,
+        centerTitle: true,
+        title: Text("My Profile"),
         actions: [
           IconButton(onPressed: ()=>logout(context), icon: Icon(Icons.logout))
         ],
@@ -116,27 +118,29 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: 
                 [
                   
-                Image.network(
+                ClipOval(
+               
+                child:Image.network(
                 imageUrl,
                 fit: BoxFit.cover,
                 height: 150,
                 width: 150,
                 loadingBuilder: (context, child, loadingProgress) {
-                  
                   if (loadingProgress == null){
-                   isLoading=false;
                     return child;
                   }
                   else{ 
-                   
-                    
-                  return Center(child: CircularProgressIndicator());}
+                  return SizedBox(height: 150,width: 150,
+                    child:Center(child: CircularProgressIndicator()));}
                 },
                 errorBuilder: (context, error, stackTrace) {
                   
-                  return Text('Could not load image');})
+                  return Icon(Icons.account_circle_rounded,size: 150,);
+                    }
+                    )
+                  )
                 ,
-                if(!isLoading)
+                
                 Positioned (
 
                     right: 5,
@@ -159,14 +163,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],),
 
                 
-                const Text("My Profile", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),),
+                Text(capitalizeFirstLetter(user!['username']),style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25),),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     SizedBox(width: 50,),
                     MyBoldText(text: "User Email: "),
-                    Text(user!['email']),
+                    Text(user['email']),
                   ],
                   
                 ),
