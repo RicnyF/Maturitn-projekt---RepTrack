@@ -5,7 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/auth/auth.dart';
 import 'package:rep_track/firebase_options.dart';
+import 'package:rep_track/pages/exercises_page.dart';
 import 'package:rep_track/pages/profile_page.dart';
+import 'package:rep_track/pages/routines_page.dart';
+import 'package:rep_track/pages/start_new_workout_page.dart';
 import 'package:rep_track/theme/dark_mode.dart';
 import 'package:rep_track/theme/light_mode.dart';
 
@@ -38,7 +41,10 @@ class MyApp extends StatelessWidget {
       theme: lightMode,
       darkTheme: darkMode,
       routes:{
+        '/new_workout_page':(context)=> StartNewWorkoutPage(),
         '/profile_page':(context)=> ProfilePage(),
+        '/exercises_page':(context)=> ExercisesPage(),
+        '/routines_page':(context)=> RoutinesPage(),
       }
     );
   }

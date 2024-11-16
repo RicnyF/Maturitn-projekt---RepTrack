@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:rep_track/components/my_button.dart';
+import 'package:rep_track/components/buttons/login_buttons.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/helper/helper_functions.dart';
 
@@ -43,10 +43,11 @@ class _LoginPageState extends State<LoginPage> {
   }
   on FirebaseAuthException catch (e){
     if (mounted) {
-    Navigator.pop(context);
+    
     displayMessageToUser(e.code, context);
+    
     }
-    }
+    } 
   }
   }
   @override
@@ -111,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
               height: 25,
             ),
             
-            MyButton(
+            MyLoginButton(
               text:"Login",
               onTap: login,),
             

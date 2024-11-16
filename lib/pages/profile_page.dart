@@ -4,10 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:rep_track/auth/auth.dart';
 import 'package:rep_track/components/my_boldtext.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rep_track/helper/helper_functions.dart';
-
+import 'package:logger/logger.dart';
 class ProfilePage extends StatefulWidget {
   
   const ProfilePage({super.key});
@@ -17,7 +18,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  Uint8List? pickedImage;
+  final logger = Logger();
   bool isLoading = false; 
   final storageRef = FirebaseStorage.instance;
   // current logged in user
@@ -27,29 +28,30 @@ class _ProfilePageState extends State<ProfilePage> {
     return await FirebaseFirestore.instance.collection("Users").doc(currentUser!.email).get();
   }
 
-  Future<void> editProfile(String username)async{
+  Future<void> editPfp(Map<String, dynamic>? user)async{
     
    final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
-    final imageRef = storageRef.ref().child('$username.jpg');
+    final imageRef = storageRef.ref().child(user!['username']);
     try{
     final imageBytes= await image.readAsBytes();
     await imageRef.putData(imageBytes);
-    
+    final imageUrl = await imageRef.getDownloadURL();
+    await FirebaseFirestore.instance.collection("Users").doc(user['email']).set({
+        'imageUrl': imageUrl,
+        'updatedAt': DateTime.now(),
+      },SetOptions(merge: true));
     }
     
     catch(e){
-      print("Error uploading immage: $e");
+      logger.e(e, time: DateTime.now());
     }
-    await getImageUrl();
+    getImageUrl();
    
   }
 
-  void logout (BuildContext context){
-      FirebaseAuth.instance.signOut();
-      Navigator.pop(context);
-    }
+  
   late String imageUrl;
   
  
@@ -61,39 +63,62 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> getImageUrl()async{
-    setState(() {
-    isLoading = true; // Set loading to true when fetching image URL
-  });
+    
     final userDoc = await getUserDetails();
      Map<String, dynamic>? userData = userDoc.data();
-     final username= userData!['username'];    
-      if (userData.isNotEmpty) {
+     final url= userData!['imageUrl'];    
+     
+      if (url!="") {
       try {
-        final ref = storageRef.ref().child('$username.jpg');
-        final url = await ref.getDownloadURL();
+        
         setState((){
           imageUrl = url;
          isLoading = false;
         });
       } catch (e) {
-        print("Could not fetch image URL: $e");
+        logger.e(e, time: DateTime.now());
       }
      
   }
   }
   
   @override Widget  build(BuildContext context) {
+    var scaffoldKey = GlobalKey<ScaffoldState>();
     return Scaffold(
       appBar: AppBar( 
         centerTitle: true,
         title: Text("My Profile"),
-        actions: [
-          IconButton(onPressed: ()=>logout(context), icon: Icon(Icons.logout))
-        ],
+  
+        actions: [Builder(builder: (context){
+          return IconButton(
+ onPressed: () { Scaffold.of(context).openEndDrawer();},           
+ icon: Icon(Icons.settings));
+  })],
+          
+       
+        
         backgroundColor: null,
           ),
+        endDrawer: Drawer(
+          key:scaffoldKey,
+          child: ListView(
+            children: [
+              ListTile(
+                title: const Text("Settings"),
+                onTap: (){},
+              ),
+              ListTile(
+                title: const Text("Log out",style: TextStyle(color:Colors.red)),
+                onTap: () =>logout(context),
+              )
+            ],
+          ),
+          
+        ),  
         backgroundColor: Theme.of(context).colorScheme.surface,
-        body: FutureBuilder<DocumentSnapshot<Map<String,dynamic>>>(
+        body: 
+        
+        FutureBuilder<DocumentSnapshot<Map<String,dynamic>>>(
           future: getUserDetails(), 
         builder: (context,snapshot){
           
@@ -135,7 +160,18 @@ class _ProfilePageState extends State<ProfilePage> {
                 },
                 errorBuilder: (context, error, stackTrace) {
                   
-                  return Icon(Icons.account_circle_rounded,size: 150,);
+                    return Container( 
+            height: 150,
+            width: 150,
+            child: Icon(Icons.account_box,size: 150, color: Theme.of(context).colorScheme.inversePrimary), // icon of the button
+            
+              
+              decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: Theme.of(context).colorScheme.primary,
+    ), // Splash color
+
+          );
                     }
                     )
                   )
@@ -146,7 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     right: 5,
                     top: 5,
                     child: GestureDetector(
-                    onTap: ()=>editProfile(user!["username"]),
+                    onTap: ()=>editPfp(user!),
                     child: Container( decoration: BoxDecoration(
                       
                   color: Theme.of(context).colorScheme.inversePrimary, // Button background color
@@ -181,7 +217,24 @@ class _ProfilePageState extends State<ProfilePage> {
                     MyBoldText(text: "Username:  "),
                     Text(user['username']),
                   ],
-                )
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 50,),
+                    MyBoldText(text: "Date of birth:  "),
+                    Text(user['birthDate']),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 50,),
+                    MyBoldText(text: "Account created:  "),
+                    Text(user['createdAt']),
+
+                  ],
+                ),
               ],
               ),
             );

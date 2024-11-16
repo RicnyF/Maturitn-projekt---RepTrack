@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:rep_track/components/my_button.dart';
+import 'package:intl/intl.dart';
+import 'package:rep_track/components/buttons/login_buttons.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/helper/helper_functions.dart';
+
 
 class RegisterPage extends StatefulWidget {
    final void Function()? onTap;
@@ -17,6 +19,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   // text controllers
+  DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
   TextEditingController usernameController = TextEditingController();
 
   TextEditingController emailController = TextEditingController();
@@ -24,6 +27,8 @@ class _RegisterPageState extends State<RegisterPage> {
   TextEditingController passwordController = TextEditingController();
 
   TextEditingController confirmPwController = TextEditingController();
+
+  TextEditingController birthdayController = TextEditingController();
 
   //register method
   void register() async{
@@ -33,45 +38,80 @@ class _RegisterPageState extends State<RegisterPage> {
     )
     );
     // check if fields are blank
-    if(usernameController.text.isEmpty || emailController.text.isEmpty || passwordController.text.isEmpty ||confirmPwController.text.isEmpty ){
+    if(usernameController.text.isEmpty || emailController.text.isEmpty || passwordController.text.isEmpty ||confirmPwController.text.isEmpty || birthdayController.text.isEmpty ){
       if(mounted){
       Navigator.pop(context);
       displayMessageToUser("All fields must be filled", context);}
+      return;
     }
-    else{
+    
     //passwords match
     if(passwordController.text != confirmPwController.text){
       Navigator.pop(context);
       displayMessageToUser("Passwords don´t match !", context);
+      return;
     }
-    else{
+    if(birthdayController.text.isNotEmpty){
+      
+      DateTime birthday = DateTime.parse(birthdayController.text.substring(0, 10)); // yyyy-mm-dd format
+        DateTime today = DateTime.now();
+
+        int age = today.year - birthday.year;
+        if (today.month < birthday.month || (today.month == birthday.month && today.day < birthday.day)) {
+          age--;
+        }
+
+        if (age < 13) {
+          Navigator.pop(context);
+          displayMessageToUser("User has to be at least 13 years old", context);
+          return;
+        }
+        }
     try{
       UserCredential? userCredential=
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text,
          password: passwordController.text);
       
-      createUserDocument(userCredential);
-
+      await createUserDocument(userCredential);
+      
     } on FirebaseAuthException catch (e){
       if(mounted){
       Navigator.pop(context);
-      displayMessageToUser(e.code, context);}
+      // Display specific error messages
+      
+    if (e.code == 'email-already-in-use') {
+      displayMessageToUser("This email is already in use. Try logging in.", context);
+    } else if (e.code == 'invalid-email') {
+      displayMessageToUser("The email format is invalid.", context);
+    } else if (e.code == 'weak-password') {
+      displayMessageToUser("The password is too weak. Use at least 6 characters, .", context);
+    } else {
+      displayMessageToUser("Registration error: ${e.message}", context);
     }
-    if(mounted){
-      Navigator.pop(context);
-      }
+  }
+      
+      
     }
-    }
+    
+    
+    
     
   }
 
+
+  
+  
   // Create user document
   Future<void> createUserDocument(UserCredential? userCredential) async{
     if (userCredential != null && userCredential.user !=null){
       await FirebaseFirestore.instance.collection("Users").doc(userCredential.user!.email).set({
         'email': userCredential.user!.email,
         'username': usernameController.text,
+        'imageUrl': "",
+        'birthDate': birthdayController.text,
+        'createdAt': dateFormat.format(DateTime.now()),
+        "updatedAt": dateFormat.format(DateTime.now()),
       });
     }
   }
@@ -146,13 +186,32 @@ class _RegisterPageState extends State<RegisterPage> {
                 obscureText: true,
                 controller: confirmPwController,
               ),
+
+
                const SizedBox(
                 height: 10,
               ),
-              
-              
+
+               TextField(
+                decoration: InputDecoration(
+                    labelText:'Date of birth',
+                    filled: true,
+                    prefixIcon: Icon(Icons.calendar_today),
+                    border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  )
+                ),
+                readOnly: true,
+                controller: birthdayController,
+                onTap: () => selectDate(context,birthdayController),
+              ),
+
+            
+               const SizedBox(
+                height: 10,
+              ),
                          
-              MyButton(
+              MyLoginButton(
                 text:"Register",
                 onTap: register,),
               
