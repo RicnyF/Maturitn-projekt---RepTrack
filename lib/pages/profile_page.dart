@@ -25,21 +25,21 @@ class _ProfilePageState extends State<ProfilePage> {
   final User ? currentUser = FirebaseAuth.instance.currentUser;
 
   Future<DocumentSnapshot<Map<String,dynamic>>> getUserDetails() async{
-    return await FirebaseFirestore.instance.collection("Users").doc(currentUser!.email).get();
+    return await FirebaseFirestore.instance.collection("Users").doc(currentUser!.uid).get();
   }
 
   Future<void> editPfp(Map<String, dynamic>? user)async{
     
    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50, maxHeight: 1000, maxWidth: 1000);
     if (image == null) return;
     final imageRef = storageRef.ref().child(user!['username']);
     try{
     final imageBytes= await image.readAsBytes();
     await imageRef.putData(imageBytes);
     final imageUrl = await imageRef.getDownloadURL();
-    await FirebaseFirestore.instance.collection("Users").doc(user['email']).set({
-        'imageUrl': imageUrl,
+    await FirebaseFirestore.instance.collection("Users").doc(currentUser!.uid).set({
+        'photoURL': imageUrl,
         'updatedAt': DateTime.now(),
       },SetOptions(merge: true));
     }
@@ -62,11 +62,11 @@ class _ProfilePageState extends State<ProfilePage> {
     getImageUrl();
   }
 
-  Future<void> getImageUrl()async{
-    
+ Future<void> getImageUrl()async{
+
     final userDoc = await getUserDetails();
      Map<String, dynamic>? userData = userDoc.data();
-     final url= userData!['imageUrl'];    
+     final url= userData!['photoURL'];    
      
       if (url!="") {
       try {
@@ -75,13 +75,13 @@ class _ProfilePageState extends State<ProfilePage> {
           imageUrl = url;
          isLoading = false;
         });
+        
       } catch (e) {
         logger.e(e, time: DateTime.now());
       }
      
   }
   }
-  
   @override Widget  build(BuildContext context) {
     var scaffoldKey = GlobalKey<ScaffoldState>();
     return Scaffold(
@@ -135,7 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
           else if (snapshot.hasData){
            
             Map<String, dynamic>? user = snapshot.data!.data();
-            
+           
             return Center(
               child: Column(children: [
                 
@@ -182,7 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     right: 5,
                     top: 5,
                     child: GestureDetector(
-                    onTap: ()=>editPfp(user!),
+                    onTap: ()=>editPfp(user),
                     child: Container( decoration: BoxDecoration(
                       
                   color: Theme.of(context).colorScheme.inversePrimary, // Button background color

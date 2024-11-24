@@ -33,6 +33,7 @@ class _RegisterPageState extends State<RegisterPage> {
   //register method
   void register() async{
     // show loading circle
+    
     showDialog(context: context, builder: (context)=> const Center(
       child: CircularProgressIndicator(),
     )
@@ -74,7 +75,8 @@ class _RegisterPageState extends State<RegisterPage> {
          password: passwordController.text);
       
       await createUserDocument(userCredential);
-      
+      if(mounted)Navigator.pop(context);
+
     } on FirebaseAuthException catch (e){
       if(mounted){
       Navigator.pop(context);
@@ -104,11 +106,14 @@ class _RegisterPageState extends State<RegisterPage> {
   
   // Create user document
   Future<void> createUserDocument(UserCredential? userCredential) async{
+    
     if (userCredential != null && userCredential.user !=null){
-      await FirebaseFirestore.instance.collection("Users").doc(userCredential.user!.email).set({
+      final userId = userCredential.user!.uid;
+      await FirebaseFirestore.instance.collection("Users").doc(userId).set({
+        'userId': userId,
         'email': userCredential.user!.email,
         'username': usernameController.text,
-        'imageUrl': "",
+        'photoURL': "",
         'birthDate': birthdayController.text,
         'createdAt': dateFormat.format(DateTime.now()),
         "updatedAt": dateFormat.format(DateTime.now()),

@@ -20,7 +20,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   //text controller
   final TextEditingController textController= TextEditingController();
  
-
+ 
 
   // open a dialog
   void openNoteBox({String? docID}){
