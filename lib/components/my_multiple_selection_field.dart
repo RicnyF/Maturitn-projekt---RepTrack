@@ -20,9 +20,9 @@ class MultipleSelectionField extends StatefulWidget {
 }
 
 class _MultipleSelectionFieldState extends State<MultipleSelectionField> {
-  final Set<String> _selectedItems = {}; // Tracks selected items
+  final Set<String> _selectedItems = {}; 
 
-  // Open the bottom sheet for selection
+
   void _openSelectionDialog() async {
     await showModalBottomSheet(
       context: context,
@@ -30,14 +30,14 @@ class _MultipleSelectionFieldState extends State<MultipleSelectionField> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
-        return StatefulBuilder( // Add StatefulBuilder to manage state inside modal
+        return StatefulBuilder( 
           builder: (BuildContext context, StateSetter setModalState) {
             return Padding(
               padding: const EdgeInsets.fromLTRB(16, 58, 16, 16),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Modal title
+                  
                   Text(
                     "Select Options",
                     style: TextStyle(
@@ -49,10 +49,12 @@ class _MultipleSelectionFieldState extends State<MultipleSelectionField> {
                   const SizedBox(height: 16),
                   Expanded(
                     child: ListView.builder(
+                      
                       itemCount: widget.items.length,
                       itemBuilder: (context, index) {
                         final item = widget.items[index];
                         return ListTile(
+                          
                           title: MyBoldText(text: item),
                           subtitle: widget.explanations != null &&
                                   widget.explanations!.isNotEmpty
@@ -71,7 +73,7 @@ class _MultipleSelectionFieldState extends State<MultipleSelectionField> {
                             },
                           ),
                           onTap: () {
-                            // Toggle selection on tap
+                            
                             setModalState(() {
                               if (_selectedItems.contains(item)) {
                                 _selectedItems.remove(item);
@@ -84,10 +86,10 @@ class _MultipleSelectionFieldState extends State<MultipleSelectionField> {
                       },
                     ),
                   ),
-                  // Done button
+                  
                   ElevatedButton(
                     onPressed: () {
-                      // Update the controller with the selected items
+             
                       widget.controller.text = _selectedItems.join(", ");
                       Navigator.pop(context);
                     },
@@ -106,7 +108,7 @@ class _MultipleSelectionFieldState extends State<MultipleSelectionField> {
       },
     );
 
-    // After the modal is closed, update the field to show the selected items
+    
     setState(() {});
   }
 

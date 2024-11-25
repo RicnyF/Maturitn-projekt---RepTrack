@@ -18,9 +18,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
    int _selectedIndex = 1;
-  //firestore
+  
   final FirestoreService firestoreService = FirestoreService();
-  //text controller
+  
   final TextEditingController textController= TextEditingController();
  
 void _onItemTapped(int index) {

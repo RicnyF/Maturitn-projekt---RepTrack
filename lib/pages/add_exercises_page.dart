@@ -38,14 +38,13 @@ class _AddExercisesPageState extends State<AddExercisesPage> {
   final TextEditingController nameController= TextEditingController();
   final User? user = FirebaseAuth.instance.currentUser;
   String imageUrl = "";
-  File? _imageFile; // To store the selected image
-  final ImagePicker _picker = ImagePicker(); // Image picker instance
+  File? _imageFile; 
+  final ImagePicker picker = ImagePicker(); 
 final storageRef = FirebaseStorage.instance;
 
   // Image picker method
   Future<void> _pickImage() async {
-    final XFile? pickedImage =
-        await _picker.pickImage(source: ImageSource.gallery); // Choose from gallery
+    final XFile? pickedImage = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50, maxHeight: 1000, maxWidth: 1000);
     if (pickedImage != null) {
       setState(() {
         _imageFile = File(pickedImage.path);
@@ -55,14 +54,12 @@ final storageRef = FirebaseStorage.instance;
   
 
 void submit() async{
-    // show loading circle
-   // Auto-generate ID
     final exerciseId = FirebaseFirestore.instance.collection('exercises').doc().id;
     showDialog(context: context, builder: (context)=> const Center(
       child: CircularProgressIndicator(),
     )
     );
-    // check if fields are blank
+    
     if(typeController.text.isEmpty || muscleGroupController.text.isEmpty || muscleController.text.isEmpty ||nameController.text.isEmpty || equipmentController.text.isEmpty ){
       if(mounted){
       Navigator.pop(context);
@@ -147,34 +144,41 @@ void submit() async{
           GestureDetector(
               onTap: _pickImage,
               child: _imageFile != null
-                  ? Center(child:Container(
-                      height: 150,
-                      width:150,                      
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle),
-                    child:Stack(
+                  ? Center(
+                      child:Stack(
+                      
                       alignment: Alignment.topRight,
                       children: [
-                    Image.file(
+                    ClipOval(child:Image.file(
                       _imageFile!,
                       width: 150,
                       height: 150,
                       fit: BoxFit.cover,
-                    ),
-                    const Icon(
+                    )),
+                    Positioned(
+                      top: 5,
+                      right: 5,
+                      child:Container(
+                        padding: EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.blue
+                        ),
+                        child:Icon(
                         Icons.edit,
                         size: 30,
-                        color: Colors.black,
-                      ),
+                        color: Colors.white,
+                      ))),
                     
-                    ])))
+                    ]))
                   :Center( child:
                   Container(
                       
                       height: 150,
                       width:150,                      
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle
+                        shape: BoxShape.circle,
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                       
                       

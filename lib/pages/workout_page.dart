@@ -15,45 +15,13 @@ class WorkoutPage extends StatefulWidget {
 }
 
 class _WorkoutPageState extends State<WorkoutPage> {
-  //firestore
+ 
   final FirestoreService firestoreService = FirestoreService();
-  //text controller
+  
   final TextEditingController textController= TextEditingController();
  
  
 
-  // open a dialog
-  void openNoteBox({String? docID}){
-    showDialog(
-      context: context,
-      builder: (context)=> AlertDialog(
-      content: TextField(
-        controller: textController,
-        ),
-        actions: [
-         //save button
-          ElevatedButton(
-            onPressed: (){
-              // add a new note
-              if(docID== null){
-                firestoreService.addNote(textController.text);
-                }
-              else{ 
-                firestoreService.updateNote(docID,textController.text);
-                }
-                
-              
-              //clear the controller
-              textController.clear();
-              //close the box
-              Navigator.pop(context);
-            }, 
-            child: const Text("Add")
-          )
-        ]
-    ));
-  }
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
