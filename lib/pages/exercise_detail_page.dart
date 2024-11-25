@@ -10,7 +10,11 @@ class ExerciseDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: AppBar(
+        title: Text(exerciseData["name"], style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
+        centerTitle: true,
+      ),
       body:Text(exerciseData['name'])
     );
   }

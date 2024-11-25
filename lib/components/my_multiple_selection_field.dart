@@ -118,6 +118,7 @@ class _MultipleSelectionFieldState extends State<MultipleSelectionField> {
       onTap: _openSelectionDialog,
       child: AbsorbPointer(
         child: TextField(
+          readOnly: true,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
           textAlign: TextAlign.center,
           controller: widget.controller,

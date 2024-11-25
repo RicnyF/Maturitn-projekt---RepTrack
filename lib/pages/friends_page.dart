@@ -11,7 +11,10 @@ class _FriendsPageState extends State<FriendsPage> {
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
-      appBar: AppBar(title: 
+      
+      appBar: AppBar(
+      automaticallyImplyLeading: false,
+      title: 
       const Text("Friends"),
       centerTitle: true,),
 

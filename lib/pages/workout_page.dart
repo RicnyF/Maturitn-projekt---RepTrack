@@ -25,7 +25,10 @@ class _WorkoutPageState extends State<WorkoutPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Workout"),centerTitle: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text("Workout"),centerTitle: true,
     backgroundColor: null,
     )
       ,

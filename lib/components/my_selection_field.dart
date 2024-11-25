@@ -58,7 +58,7 @@ class _SelectionFieldState extends State<SelectionField> {
       onTap: _openSelectionDialog,
       child: AbsorbPointer(
         child: TextField(
-          
+          readOnly: true,
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
           textAlign: TextAlign.center,
           controller: widget.controller,

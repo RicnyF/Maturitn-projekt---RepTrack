@@ -85,7 +85,10 @@ class _ProfilePageState extends State<ProfilePage> {
   @override Widget  build(BuildContext context) {
     var scaffoldKey = GlobalKey<ScaffoldState>();
     return Scaffold(
+      
       appBar: AppBar( 
+        automaticallyImplyLeading: false,
+
         centerTitle: true,
         title: Text("My Profile"),
   

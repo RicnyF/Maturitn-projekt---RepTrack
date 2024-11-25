@@ -41,7 +41,7 @@ static const List<Widget> _pages = <Widget>[
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-  
+        
         body:_pages.elementAt(_selectedIndex),
         bottomNavigationBar:CustomBottomAppBar(selectedIndex: _selectedIndex, onItemTapped: _onItemTapped,)
     );

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 
 
-class CustomBottomAppBar extends StatelessWidget {
+class CustomBottomAppBar extends StatefulWidget {
  final int selectedIndex;
  final ValueChanged<int> onItemTapped;
   const CustomBottomAppBar({
     super.key, required this.selectedIndex, required this.onItemTapped
   });
 
+  @override
+  State<CustomBottomAppBar> createState() => _CustomBottomAppBarState();
+}
+
+class _CustomBottomAppBarState extends State<CustomBottomAppBar> {
   @override
   Widget build(BuildContext context) {
    
@@ -16,8 +21,12 @@ class CustomBottomAppBar extends StatelessWidget {
 
     return BottomNavigationBar(
           iconSize: 35,
-    items: const <BottomNavigationBarItem>[
+          selectedItemColor: Theme.of(context).colorScheme.inversePrimary,
+          backgroundColor: Theme.of(context).colorScheme.secondary,
+    items: <BottomNavigationBarItem>[
+      
       BottomNavigationBarItem(
+      
         icon: Icon(Icons.people),
         label: 'Friends',
       ),
@@ -31,8 +40,8 @@ class CustomBottomAppBar extends StatelessWidget {
       ),
       
     ],
-    currentIndex: selectedIndex, //New
-  onTap: onItemTapped,
+    currentIndex: widget.selectedIndex, //New
+  onTap: widget.onItemTapped,
   );
   }
 }
