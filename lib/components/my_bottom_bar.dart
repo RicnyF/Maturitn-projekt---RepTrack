@@ -20,6 +20,7 @@ class _CustomBottomAppBarState extends State<CustomBottomAppBar> {
 
 
     return BottomNavigationBar(
+      selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
           iconSize: 35,
           selectedItemColor: Theme.of(context).colorScheme.inversePrimary,
           backgroundColor: Theme.of(context).colorScheme.secondary,

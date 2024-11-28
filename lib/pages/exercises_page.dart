@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/pages/add_exercises_page.dart';
-import 'package:rep_track/pages/exercise_detail_page.dart';
+import 'package:rep_track/pages/edit_exercises_page.dart';
+import 'package:rep_track/pages/exercise%20details/exercise_detail_page.dart';
 import 'package:rep_track/services/firestore.dart';
 class ExercisesPage extends StatefulWidget {
   const ExercisesPage({super.key});
@@ -126,6 +127,9 @@ class ExerciseListTile extends StatelessWidget {
           else{ 
           return SizedBox(height: 50,width: 50,
             child:Center(child: CircularProgressIndicator()));}
-        }),)));
+        }),))
+        ,
+        trailing: TextButton(onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => EditExercisesPage(exerciseId: docID, exerciseData: data))),style: ButtonStyle(maximumSize: WidgetStatePropertyAll(Size(80,40)),shape:WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),backgroundColor: WidgetStatePropertyAll(Colors.blue)), child: Text("Edit")),
+        );
   }
 }

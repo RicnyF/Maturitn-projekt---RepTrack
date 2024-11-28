@@ -22,10 +22,11 @@ class _HomePageState extends State<HomePage> {
   final FirestoreService firestoreService = FirestoreService();
   
   final TextEditingController textController= TextEditingController();
- 
+ final _pageController = PageController();
 void _onItemTapped(int index) {
   setState(() {
     _selectedIndex = index;
+    _pageController.animateToPage(_selectedIndex, duration: Duration(milliseconds: 200),curve: Curves.linear);
   });
 }
 static const List<Widget> _pages = <Widget>[
@@ -42,7 +43,17 @@ static const List<Widget> _pages = <Widget>[
   Widget build(BuildContext context) {
     return Scaffold(
         
-        body:_pages.elementAt(_selectedIndex),
+        body:PageView(
+          onPageChanged: (index){
+            setState(() {
+              _selectedIndex = index;
+            });
+            
+          },
+  
+          controller: _pageController,
+          children: _pages,
+        ),
         bottomNavigationBar:CustomBottomAppBar(selectedIndex: _selectedIndex, onItemTapped: _onItemTapped,)
     );
   }
