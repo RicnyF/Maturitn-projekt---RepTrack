@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 class RoutinesPage extends StatefulWidget {
   const RoutinesPage({super.key});
 
@@ -14,7 +15,10 @@ class _RoutinesPageState extends State<RoutinesPage> {
       appBar: AppBar(
         title: Text("Routines"),
         centerTitle: true,
+        actions:[IconButton(onPressed: ()=>Navigator.pushNamed(context, '/add_routine_page'),icon: Icon(Icons.add),)],
+      
       ),
+      
     );
   }
 }

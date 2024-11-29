@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:rep_track/auth/auth.dart';
 import 'package:rep_track/firebase_options.dart';
 import 'package:rep_track/pages/add_exercises_page.dart';
+import 'package:rep_track/pages/routines/add_routines_page.dart';
 import 'package:rep_track/pages/exercises_page.dart';
 import 'package:rep_track/pages/home_page.dart';
 import 'package:rep_track/pages/profile_page.dart';
-import 'package:rep_track/pages/routines_page.dart';
+import 'package:rep_track/pages/routines/routines_page.dart';
+import 'package:rep_track/pages/routines/select_exercise_page.dart';
 import 'package:rep_track/pages/sandbox.dart';
 import 'package:rep_track/pages/start_new_workout_page.dart';
 import 'package:rep_track/theme/dark_mode.dart';
@@ -50,6 +52,8 @@ class MyApp extends StatelessWidget {
         '/routines_page':(context)=> RoutinesPage(),
         '/add_exercises_page':(context)=> AddExercisesPage(),
         '/home_page':(context)=>HomePage(),
+        '/add_routine_page':(context)=>AddRoutinesPage(),
+        '/select_exercises_page':(context)=>SelectExercisesPage(),
       }
     );
   }
