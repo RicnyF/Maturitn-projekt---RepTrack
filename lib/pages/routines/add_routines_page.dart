@@ -67,8 +67,10 @@ SizedBox(height: 10,),
                 ? Column(
                     children: exerciseDetails.map((exercise) {
                       return ListTile(
+                        leading: CircleAvatar(backgroundImage: exercise["imageUrl"]!=''?
+                        NetworkImage(exercise['imageUrl'],): AssetImage('images/default_profile.png')),
                         title: Text(exercise['name'] ?? 'Unnamed Exercise'),
-                        subtitle: Text(exercise['description'] ?? 'No description'),
+                        subtitle: Text(exercise['muscles'] ?? 'No description'),
                       );
                     }).toList(),
                   )

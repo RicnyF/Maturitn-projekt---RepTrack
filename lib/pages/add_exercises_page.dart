@@ -90,7 +90,7 @@ void submit() async{
         "updatedAt": dateFormat.format(DateTime.now()),
       });
      if(mounted){
-        Navigator.of(context).pushNamed('/exercises_page');
+        Navigator.pop(context);
         displayMessageToUser("Exercise created for everyone", context);
       
       }}
@@ -114,7 +114,7 @@ void submit() async{
         "updatedAt": dateFormat.format(DateTime.now()),
       });
       if(mounted){
-        Navigator.of(context).pushNamed('/exercises_page');
+        Navigator.pop(context);
         displayMessageToUser("Exercise created", context);
       
       }}
@@ -132,7 +132,7 @@ void submit() async{
         automaticallyImplyLeading: false,
         backgroundColor: Theme.of(context).colorScheme.primary,
         actions: [
-          IconButton(onPressed: ()=> Navigator.of(context).pushNamed('/exercises_page'), icon: Icon(Icons.cancel), color: Theme.of(context).colorScheme.inversePrimary,)
+          IconButton(onPressed: ()=> Navigator.pop(context), icon: Icon(Icons.cancel), color: Theme.of(context).colorScheme.inversePrimary,)
         ],
       ),
       backgroundColor: Theme.of(context).colorScheme.primary,

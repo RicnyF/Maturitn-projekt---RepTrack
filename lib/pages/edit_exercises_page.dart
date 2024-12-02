@@ -139,7 +139,7 @@ void edit() async{
         "updatedAt": dateFormat.format(DateTime.now()),
       });
      if(mounted){
-        Navigator.of(context).pushNamed('/exercises_page');
+        Navigator.pop(context);
         displayMessageToUser("Exercise created for everyone", context);
       
       }}
@@ -178,7 +178,7 @@ void edit() async{
         backgroundColor: Theme.of(context).colorScheme.primary,
         leading: IconButton(onPressed: delete, icon: Icon(Icons.delete)),
         actions: [
-          IconButton(onPressed: ()=> Navigator.of(context).pushNamed('/exercises_page'), icon: Icon(Icons.cancel), color: Theme.of(context).colorScheme.inversePrimary,)
+          IconButton(onPressed: ()=> Navigator.pop(context), icon: Icon(Icons.cancel), color: Theme.of(context).colorScheme.inversePrimary,)
         ],
       ),
       backgroundColor: Theme.of(context).colorScheme.primary,

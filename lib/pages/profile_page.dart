@@ -165,14 +165,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   
                     return Container( 
             height: 150,
-            width: 150,
-            child: Icon(Icons.account_box,size: 150, color: Theme.of(context).colorScheme.inversePrimary), // icon of the button
+            width: 150, 
             
               
               decoration: BoxDecoration(
       shape: BoxShape.circle,
       color: Theme.of(context).colorScheme.primary,
-    ), // Splash color
+    ),
+            child: Icon(Icons.account_box,size: 150, color: Theme.of(context).colorScheme.inversePrimary), 
 
           );
                     }
