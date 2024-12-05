@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage> {
   final FirestoreService firestoreService = FirestoreService();
   
   final TextEditingController textController= TextEditingController();
- final _pageController = PageController();
+ final _pageController = PageController(initialPage: 1);
 void _onItemTapped(int index) {
   setState(() {
     _selectedIndex = index;
