@@ -36,7 +36,6 @@ class _AddExercisesPageState extends State<AddExercisesPage> {
   final TextEditingController muscleController= TextEditingController();
 
   final TextEditingController nameController= TextEditingController();
-  final User? user = FirebaseAuth.instance.currentUser;
   String imageUrl = "";
   File? _imageFile; 
   final ImagePicker picker = ImagePicker(); 
@@ -72,7 +71,6 @@ void submit() async{
     await imageRef.putData(imageBytes);
     imageUrl = await imageRef.getDownloadURL();
     }
-    if(user?.email == "admin@admin.cz"){
       if(mounted)Navigator.pop(context);
       try{
         
@@ -82,8 +80,8 @@ void submit() async{
         'trackingType': typeController.text,
         'muscleGroup': muscleGroupController.text,
         'muscles' : muscleController.text,
-        'type': "predefined",
-        'createdBy': user?.uid,
+        'type': currentUser?.email =="admin@admin.cz" ?"predefined":"custom",
+        'createdBy': currentUser?.uid,
         'imageUrl': imageUrl,
         'equipment':equipmentController.text,
         'createdAt': dateFormat.format(DateTime.now()),
@@ -91,33 +89,13 @@ void submit() async{
       });
      if(mounted){
         Navigator.pop(context);
-        displayMessageToUser("Exercise created for everyone", context);
+        displayMessageToUser(currentUser?.email =="admin@admin.cz" ?"Exercise created for everyone":"Exercise created", context);
       
       }}
       catch(e){
         print(e);
       }
-      }
-      else{
-        Navigator.pop(context);
-      await FirebaseFirestore.instance.collection("Exercises").doc(exerciseId).set({
-        'exerciseId': exerciseId,
-        'name':  nameController.text,
-        'trackingType': typeController.text,
-        'muscleGroup': muscleGroupController.text,
-        'muscles' : muscleController.text,
-        'type': "global",
-        'createdBy': user?.uid,
-        'imageUrl': "",
-        'equipment':equipmentController.text,
-        'createdAt': dateFormat.format(DateTime.now()),
-        "updatedAt": dateFormat.format(DateTime.now()),
-      });
-      if(mounted){
-        Navigator.pop(context);
-        displayMessageToUser("Exercise created", context);
       
-      }}
       
     }
     

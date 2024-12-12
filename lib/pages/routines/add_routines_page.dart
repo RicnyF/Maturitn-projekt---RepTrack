@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 import 'package:rep_track/components/my_textfield.dart';
+import 'package:rep_track/helper/helper_functions.dart';
 import 'package:uuid/uuid.dart';
 
 class AddRoutinesPage extends StatefulWidget {
@@ -21,7 +24,8 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
   List<Map<String, dynamic>> exerciseDetails = [];
   Map<String, Duration> restTimers = {};
   Map<String, TextEditingController> noteControllers = {};
-
+  final User? currentUser = FirebaseAuth.instance.currentUser;
+  DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
   Future<void> selectExercises() async {
     final result = await Navigator.pushNamed(context, '/select_exercises_page');
     if (result != null && result is List<String>) {
@@ -47,6 +51,13 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
         .forEach((key) {
       selectedTypes.remove(key);
     });
+  
+     setsPerExercise.keys
+        .where((key) => !exerciseDetails.any((exercise) => exercise['uuid'] == key))
+        .toList()
+        .forEach((key) {
+      setsPerExercise.remove(key);
+    });
   }
 
   void resetRoutine() {
@@ -65,6 +76,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
   Future<void> fetchExerciseDetails() async {
     if (selectedExercises.isEmpty) {
       resetRoutine();
+      print("Reset");
       return;
     }
 
@@ -102,19 +114,62 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
     checkKeys();
   }
 
-  void saveRoutine() {
-    setsPerExercise.forEach((exerciseUuid, sets) {
-      print("Exercise ID: $exerciseUuid");
-      sets.asMap().forEach((index, set) {
-        print("Set ${index + 1}: $set");
-      });
-    });
+  void saveRoutine()async {
+    final routineId = FirebaseFirestore.instance.collection('Routines').doc().id;
 
-    noteControllers.forEach((key, controller) {
-      print("Notes for $key: ${controller.text}");
-    });
+    showDialog(context: context, builder: (context)=> const Center(
+      child: CircularProgressIndicator(),
+    )
+    );
+    
+    if(nameController.text.isEmpty){
+      Navigator.pop(context);
+      displayMessageToUser("Routine name can´t be empty", context);
+    }
+    else if(selectedExercises.isEmpty){
+      Navigator.pop(context);
+      displayMessageToUser("No exercise is selected", context);
+    }
+    else{
+      
+      
+      Navigator.pop(context);
+      try{
+        List<Map<String, dynamic>> exerciseData = exerciseDetails.map((exercise) {
+        final uuid = exercise['uuid']; 
+        return {
+          "uuid": uuid,
+          "id": exercise['id'],
+          "name": exercise['name'],
+          "restTimer": restTimers[uuid]?.inSeconds ?? 0,
+          "notes": noteControllers[uuid]?.text ?? '',
+          "sets": setsPerExercise[uuid] ?? [], 
+        };
+      }).toList();
+
+        await FirebaseFirestore.instance.collection('Routines').doc(routineId).set({
+          'routineId':routineId,
+          'createdBy': currentUser?.uid,
+          'name': nameController.text,
+          'exercises': exerciseData,
+          'createdAt': dateFormat.format(DateTime.now()),
+        "updatedAt": dateFormat.format(DateTime.now()),
+          'type': currentUser?.email =="admin@admin.cz" ?"predefined":"custom",
+        });
+      if(mounted){
+      Navigator.pop(context);
+      displayMessageToUser("Routine saved successfully!", context);
+      }
+     
+      resetRoutine();
+      }
+      catch(e){
+        print(e);
+      
+    }
+    
   }
-
+  }
   Future<void> removeExercise(exercise) async {
     setState(() {
       selectedExercises.remove(exercise['id']);
