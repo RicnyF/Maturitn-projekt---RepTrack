@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:rep_track/components/buttons/login_buttons.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/helper/helper_functions.dart';
+import 'package:rep_track/utils/logger.dart';
 
 class LoginPage extends StatefulWidget {
   final void Function()? onTap;
@@ -23,6 +24,8 @@ class _LoginPageState extends State<LoginPage> {
   //login method
   void login() async{
     // loading circle
+    AppLogger.logInfo("Attempting to login...");
+
     showDialog(context: context, builder: (context)=> const Center(
       child: CircularProgressIndicator(),
     )
@@ -39,13 +42,16 @@ class _LoginPageState extends State<LoginPage> {
      await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text, 
      password: passwordController.text);
     // pop loading circle
-     if (mounted) Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
+      AppLogger.logInfo("Logged in successfully.");
+
   }
-  on FirebaseAuthException catch (e){
+  on FirebaseAuthException catch (e, stackTrace){
     if (mounted) {
     
     displayMessageToUser(e.code, context);
-    
+        AppLogger.logError("Failed to login.", e, stackTrace);
+
     }
     } 
   }

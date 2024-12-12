@@ -13,6 +13,7 @@ import 'package:rep_track/components/my_selection_field.dart';
 
 import 'package:rep_track/components/my_textfield2.dart';
 import 'package:rep_track/helper/helper_functions.dart';
+import 'package:rep_track/utils/logger.dart';
 
 
 
@@ -60,6 +61,8 @@ final storageRef = FirebaseStorage.instance;
   
 
 void delete() async{
+  AppLogger.logInfo("Attempting to delete a exercise...");
+
   final result = await showDialog<bool>(context: context, builder: (context) => AlertDialog(
     title: const Text("Are you sure ?"),
     content: Text ("This action will permanently delete exercise ${widget.exerciseData['name']}!"),
@@ -92,7 +95,9 @@ void delete() async{
         context,
       );
     }
-  } catch (e) {
+    AppLogger.logInfo("Exercise deleted successfully.");
+
+  } catch (e,stackTrace) {
     if(mounted){
     Navigator.pop(context);
     displayMessageToUser(
@@ -100,9 +105,13 @@ void delete() async{
       context,
     );
     }
+    AppLogger.logError("Failed to delete exercise.", e, stackTrace);
+
   }
 }
 void edit() async{
+    AppLogger.logInfo("Attempting to edit the exercise...");
+
     final exerciseId = FirebaseFirestore.instance.collection('exercises').doc().id;
     showDialog(context: context, builder: (context)=> const Center(
       child: CircularProgressIndicator(),
@@ -140,11 +149,13 @@ void edit() async{
       });
      if(mounted){
         Navigator.pop(context);
-        displayMessageToUser("Exercise created for everyone", context);
-      
+        displayMessageToUser("Exercise edited", context);
+        AppLogger.logInfo("Exercies edited successfully.");
+
       }}
-      catch(e){
-        
+      catch(e, stackTrace){
+            AppLogger.logError("Failed to edit the exercise.", e, stackTrace);
+
       }
       
      

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:rep_track/components/buttons/login_buttons.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/helper/helper_functions.dart';
+import 'package:rep_track/utils/logger.dart';
 
 
 class RegisterPage extends StatefulWidget {
@@ -33,7 +34,8 @@ class _RegisterPageState extends State<RegisterPage> {
   //register method
   void register() async{
     // show loading circle
-    
+    AppLogger.logInfo("Attempting to register...");
+
     showDialog(context: context, builder: (context)=> const Center(
       child: CircularProgressIndicator(),
     )
@@ -76,12 +78,14 @@ class _RegisterPageState extends State<RegisterPage> {
       
       await createUserDocument(userCredential);
       if(mounted)Navigator.pop(context);
+      AppLogger.logInfo("Account created successfully.");
 
-    } on FirebaseAuthException catch (e){
+    } on FirebaseAuthException catch (e,stackTrace){
       if(mounted){
       Navigator.pop(context);
       // Display specific error messages
-      
+      AppLogger.logError("Failed to register.", e, stackTrace);
+
     if (e.code == 'email-already-in-use') {
       displayMessageToUser("This email is already in use. Try logging in.", context);
     } else if (e.code == 'invalid-email') {

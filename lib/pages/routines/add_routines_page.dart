@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/helper/helper_functions.dart';
 import 'package:uuid/uuid.dart';
-
+import 'package:rep_track/utils/logger.dart';
 class AddRoutinesPage extends StatefulWidget {
   const AddRoutinesPage({super.key});
 
@@ -74,6 +74,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
   }
 
   Future<void> fetchExerciseDetails() async {
+    
     if (selectedExercises.isEmpty) {
       resetRoutine();
       print("Reset");
@@ -116,6 +117,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
 
   void saveRoutine()async {
     final routineId = FirebaseFirestore.instance.collection('Routines').doc().id;
+    AppLogger.logInfo("Attempting to save a routine...");
 
     showDialog(context: context, builder: (context)=> const Center(
       child: CircularProgressIndicator(),
@@ -125,10 +127,13 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
     if(nameController.text.isEmpty){
       Navigator.pop(context);
       displayMessageToUser("Routine name can´t be empty", context);
+      AppLogger.logError("Routine name is empty.", );
+
     }
     else if(selectedExercises.isEmpty){
       Navigator.pop(context);
       displayMessageToUser("No exercise is selected", context);
+      AppLogger.logError("No exercises selected.", );
     }
     else{
       
@@ -160,11 +165,12 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
       Navigator.pop(context);
       displayMessageToUser("Routine saved successfully!", context);
       }
-     
+      AppLogger.logInfo("Routine saved successfully.");
+
       resetRoutine();
       }
-      catch(e){
-        print(e);
+      catch(e, stackTrace){
+      AppLogger.logError("Failed to save routine.", e, stackTrace);
       
     }
     

@@ -16,9 +16,11 @@ import 'package:rep_track/pages/sandbox.dart';
 import 'package:rep_track/pages/start_new_workout_page.dart';
 import 'package:rep_track/theme/dark_mode.dart';
 import 'package:rep_track/theme/light_mode.dart';
+import 'package:rep_track/utils/logger.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AppLogger.logInfo("Initializing Firebase...");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
    await FirebaseAppCheck.instance.activate(
     androidProvider: AndroidProvider.debug,
@@ -30,6 +32,7 @@ Future<void> main() async {
         // 4. App Attest provider with fallback to Device Check provider (App Attest provider is only available on iOS 14.0+, macOS 14.0+)
     
   );
+  AppLogger.logInfo("Firebase initialized successfully.");
   runApp(const MyApp());
  
 }

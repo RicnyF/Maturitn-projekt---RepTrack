@@ -13,6 +13,7 @@ import 'package:rep_track/components/my_selection_field.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/components/my_textfield2.dart';
 import 'package:rep_track/helper/helper_functions.dart';
+import 'package:rep_track/utils/logger.dart';
 
 
 
@@ -54,6 +55,8 @@ final storageRef = FirebaseStorage.instance;
 
 void submit() async{
     final exerciseId = FirebaseFirestore.instance.collection('exercises').doc().id;
+      AppLogger.logInfo("Attempting to save a exercise...");
+
     showDialog(context: context, builder: (context)=> const Center(
       child: CircularProgressIndicator(),
     )
@@ -90,12 +93,12 @@ void submit() async{
      if(mounted){
         Navigator.pop(context);
         displayMessageToUser(currentUser?.email =="admin@admin.cz" ?"Exercise created for everyone":"Exercise created", context);
-      
+        AppLogger.logInfo("Exercise saved successfully.");
+
       }}
-      catch(e){
-        print(e);
-      }
-      
+      catch (e, stackTrace) {
+    AppLogger.logError("Failed to save exercise.", e, stackTrace);
+  }
       
     }
     

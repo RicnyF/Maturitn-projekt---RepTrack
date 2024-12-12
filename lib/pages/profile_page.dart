@@ -9,6 +9,7 @@ import 'package:rep_track/components/my_boldtext.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rep_track/helper/helper_functions.dart';
 import 'package:logger/logger.dart';
+import 'package:rep_track/utils/logger.dart';
 class ProfilePage extends StatefulWidget {
   
   const ProfilePage({super.key});
@@ -29,7 +30,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> editPfp(Map<String, dynamic>? user)async{
-    
+    AppLogger.logInfo("Attempting to edit profile picture...");
+
    final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50, maxHeight: 1000, maxWidth: 1000);
     if (image == null) return;
@@ -42,10 +44,12 @@ class _ProfilePageState extends State<ProfilePage> {
         'photoURL': imageUrl,
         'updatedAt': DateTime.now(),
       },SetOptions(merge: true));
+    AppLogger.logInfo("Profile picture edited successfully.");
     }
     
-    catch(e){
-      logger.e(e, time: DateTime.now());
+    catch(e,stackTrace){
+      AppLogger.logError("Failed to edit profile picture.", e, stackTrace);
+
     }
     getImageUrl();
    
@@ -63,6 +67,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
  Future<void> getImageUrl()async{
+    AppLogger.logInfo("Attempting to get image url...");
 
     final userDoc = await getUserDetails();
      Map<String, dynamic>? userData = userDoc.data();
@@ -75,9 +80,11 @@ class _ProfilePageState extends State<ProfilePage> {
           imageUrl = url;
          isLoading = false;
         });
-        
-      } catch (e) {
-        logger.e(e, time: DateTime.now());
+        AppLogger.logInfo("Image url taken successfully.");
+
+      } catch (e,stackTrace) {
+       AppLogger.logError("Failed to get image url.", e, stackTrace);
+
       }
      
   }
