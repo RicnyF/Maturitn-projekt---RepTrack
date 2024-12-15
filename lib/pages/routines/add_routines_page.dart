@@ -145,6 +145,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
         return {
           "uuid": uuid,
           "id": exercise['id'],
+          "imageURL": exercise['imageUrl'],
           "name": exercise['name'],
           "restTimer": restTimers[uuid]?.inSeconds ?? 0,
           "notes": noteControllers[uuid]?.text ?? '',

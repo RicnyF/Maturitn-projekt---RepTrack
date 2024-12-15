@@ -1,10 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart';
-import 'package:rep_track/pages/add_exercises_page.dart';
-import 'package:rep_track/pages/edit_exercises_page.dart';
-import 'package:rep_track/pages/exercise%20details/exercise_detail_page.dart';
+
 import 'package:rep_track/services/exerciseList.dart';
-import 'package:rep_track/services/firestore.dart';
+
 class ExercisesPage extends StatefulWidget {
   const ExercisesPage({super.key});
 

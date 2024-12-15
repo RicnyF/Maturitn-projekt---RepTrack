@@ -153,38 +153,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: 
                 [
                   
-                ClipOval(
-               
-                child:Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                height: 150,
-                width: 150,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null){
-                    return child;
-                  }
-                  else{ 
-                  return SizedBox(height: 150,width: 150,
-                    child:Center(child: CircularProgressIndicator()));}
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  
-                    return Container( 
-            height: 150,
-            width: 150, 
-            
-              
-              decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: Theme.of(context).colorScheme.primary,
-    ),
-            child: Icon(Icons.account_box,size: 150, color: Theme.of(context).colorScheme.inversePrimary), 
-
-          );
-                    }
-                    )
-                  )
+                Photos(imageUrl: imageUrl,height: 150, width: 150,)
                 ,
                 
                 Positioned (
@@ -256,5 +225,53 @@ class _ProfilePageState extends State<ProfilePage> {
         )
         );
       
+  }
+}
+
+class Photos extends StatelessWidget {
+  const Photos({
+    super.key,
+    required this.imageUrl,
+    required this.height,
+    required this.width,
+  });
+  final double height;
+  final double width;
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipOval(
+                   
+    child:Image.network(
+    imageUrl,
+    fit: BoxFit.cover,
+    height: height,
+    width: width,
+    loadingBuilder: (context, child, loadingProgress) {
+      if (loadingProgress == null){
+        return child;
+      }
+      else{ 
+      return SizedBox(height: height,width: width,
+        child:Center(child: CircularProgressIndicator()));}
+    },
+    errorBuilder: (context, error, stackTrace) {
+      
+        return Container( 
+                height: height,
+                width: width, 
+                
+                  
+                  decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+                child: Icon(Icons.account_box,size: height, color: Theme.of(context).colorScheme.inversePrimary), 
+    
+              );
+        }
+        )
+      );
   }
 }
