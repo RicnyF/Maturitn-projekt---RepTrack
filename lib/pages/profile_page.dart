@@ -241,7 +241,7 @@ class Photos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipOval(
+    return imageUrl!=""? ClipOval(
                    
     child:Image.network(
     imageUrl,
@@ -272,6 +272,18 @@ class Photos extends StatelessWidget {
               );
         }
         )
-      );
+      ):Container( 
+                height: height,
+                width: width, 
+                
+                  
+                  decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+                child: Icon(Icons.account_box,size: height, color: Theme.of(context).colorScheme.inversePrimary), 
+    
+              );
+      
   }
 }

@@ -31,4 +31,18 @@ class FirestoreService{
     Future<void> deleteNote(String docID){
     return exercises.doc(docID).delete();
    }
+   Future<void> deleteRoutine(String docID){
+    return routines.doc(docID).delete();
+   } 
+   Future<List<DocumentSnapshot>> getExercisesByIds(List<String> ids) async {
+    List<DocumentSnapshot> exercisesList = [];
+    for (String id in ids) {
+      DocumentSnapshot snapshot = await exercises.doc(id).get();
+      if (snapshot.exists) {
+        exercisesList.add(snapshot);
+      }
+    }
+    return exercisesList;
+  }
+
 }
