@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/helper/helper_functions.dart';
 import 'package:rep_track/pages/profile_page.dart';
+import 'package:rep_track/pages/routines/edit_routines_page.dart';
 import 'package:rep_track/pages/routines/routine_detail_page.dart';
 import 'package:rep_track/services/firestore.dart';
 import 'package:rep_track/utils/logger.dart';
@@ -78,7 +79,7 @@ class _RoutinesPageState extends State<RoutinesPage> {
       AppLogger.logError("Failed to delete routine.", e, stackTrace);
     }
   }
-
+  
   final firestoreService = FirestoreService();
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,162 +119,178 @@ class _RoutinesPageState extends State<RoutinesPage> {
                       
                       Map<String, dynamic> routineData =
                           routine.data() as Map<String, dynamic>;
-                      
                       return Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 4),
-                          child: Card(
-                              elevation: 4,
-                              child: Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(routineData['name'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),),
-                                          PopupMenuButton<SampleItem>(
-                                            onSelected: (SampleItem item) {
-                                              setState(() {
-                                                selectedItem = item;
-                                              });
-                                              switch (item) {
-                                                case SampleItem.itemOne:
-                                                  print(
-                                                      "Edit Routine: ${routineData['name']}");
-                                                  break;
-                                                case SampleItem.itemTwo:
-                                                  delete(routineData);
-                                                  break;
-                                                case SampleItem.itemThree:
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) => RoutineDetailPage(
-                                                        routineId: routineData["routineId"],
-                                                        routineData: routineData,
-                                                      ),
-                                                    ),
-                                                  );
-                                                  break;
-                                              }
-                                            },
-                                            itemBuilder: (BuildContext
-                                                    context) =>
-                                                <PopupMenuEntry<SampleItem>>[
-                                              const PopupMenuItem<SampleItem>(
-                                                value: SampleItem.itemOne,
-                                                child: Text('Edit Routine'),
-                                              ),
-                                              PopupMenuItem<SampleItem>(
-                                                value: SampleItem.itemTwo,
-                                                child: Text('Delete Routine'),
-                                               
-                                                    
-                                              ),
-                                              const PopupMenuItem<SampleItem>(
-                                                value: SampleItem.itemThree,
-                                                child: Text('View Details'),
-                                              ),
-                                            ],
-                                            icon: const Icon(Icons
-                                                .more_vert), // Menu icon for each card
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(
-                                        height: 6,
-                                      ),
-                                      SizedBox(
-                                        height: 200,
-                                        child: ListView.builder(
-                                            physics:
-                                                NeverScrollableScrollPhysics(),
-                                            itemCount: routineData["exercises"]
-                                                        .length >
-                                                    3
-                                                ? 3
-                                                : routineData["exercises"]
-                                                    .length,
-                                            itemBuilder: (context, subIndex) {
-                                              String exerciseId =
-                                                  routineData['exercises']
-                                                      [subIndex]["id"];
-                                              var exercise =
-                                                  routineData['exercises']
-                                                      [subIndex];
-                                              int numberOfSets =
-                                                  (exercise['sets']
-                                                          as List<dynamic>)
-                                                      .length;
-
-                                              return ListTile(
-                                                  title: FutureBuilder<
-                                                      DocumentSnapshot>(
-                                                future: firestoreService
-                                                    .getDocumentById(
-                                                        'Exercises',
-                                                        exerciseId),
-                                                builder: (context, snapshot) {
-                                                  if (snapshot.hasData) {
-                                                    Map<String, dynamic>
-                                                        exerciseData =
-                                                        snapshot.data!.data()
-                                                            as Map<String,
-                                                                dynamic>;
-                                                    return Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        children: [
-                                                          Photos(
-                                                            imageUrl:
-                                                                exerciseData[
-                                                                    'imageUrl'],
-                                                            height: 40,
-                                                            width: 40,
-                                                          ),
-                                                          SizedBox(
-                                                            width: 15,
-                                                          ),
-                                                          Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Text(
+                          child: GestureDetector(
+                            onTap:()=> routineDetailView(context, routineData),
+                            child: Card(
+                                elevation: 4,
+                                child: Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(routineData['name'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),),
+                                            PopupMenuButton<SampleItem>(
+                                              onSelected: (SampleItem item) {
+                                                setState(() {
+                                                  selectedItem = item;
+                                                });
+                                                switch (item) {
+                                                  case SampleItem.itemOne:
+                                                    routineEdit(context, routineData);
+                                                    break;
+                                                  case SampleItem.itemTwo:
+                                                    delete(routineData);
+                                                    break;
+                                                  case SampleItem.itemThree:
+                                                    routineDetailView(context, routineData);
+                                                    break;
+                                                }
+                                              },
+                                              itemBuilder: (BuildContext
+                                                      context) =>
+                                                  <PopupMenuEntry<SampleItem>>[
+                                                const PopupMenuItem<SampleItem>(
+                                                  value: SampleItem.itemOne,
+                                                  child: Text('Edit Routine'),
+                                                ),
+                                                PopupMenuItem<SampleItem>(
+                                                  value: SampleItem.itemTwo,
+                                                  child: Text('Delete Routine'),
+                                                 
+                                                      
+                                                ),
+                                                const PopupMenuItem<SampleItem>(
+                                                  value: SampleItem.itemThree,
+                                                  child: Text('View Details'),
+                                                ),
+                                              ],
+                                              icon: const Icon(Icons
+                                                  .more_vert), // Menu icon for each card
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                          height: 6,
+                                        ),
+                                        SizedBox(
+                                          height: 200,
+                                          child: ListView.builder(
+                                              physics:
+                                                  NeverScrollableScrollPhysics(),
+                                              itemCount: routineData["exercises"]
+                                                          .length >
+                                                      3
+                                                  ? 3
+                                                  : routineData["exercises"]
+                                                      .length,
+                                              itemBuilder: (context, subIndex) {
+                                                String exerciseId =
+                                                    routineData['exercises']
+                                                        [subIndex]["id"];
+                                                var exercise =
+                                                    routineData['exercises']
+                                                        [subIndex];
+                                                int numberOfSets =
+                                                    (exercise['sets']
+                                                            as List<dynamic>)
+                                                        .length;
+                            
+                                                return ListTile(
+                                                    title: FutureBuilder<
+                                                        DocumentSnapshot>(
+                                                  future: firestoreService
+                                                      .getDocumentById(
+                                                          'Exercises',
+                                                          exerciseId),
+                                                  builder: (context, snapshot) {
+                                                    if (snapshot.hasData) {
+                                                      Map<String, dynamic>
+                                                          exerciseData =
+                                                          snapshot.data!.data()
+                                                              as Map<String,
+                                                                  dynamic>;
+                                                      return Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          children: [
+                                                            Photos(
+                                                              imageUrl:
                                                                   exerciseData[
-                                                                      "name"],
-                                                                  style: TextStyle(
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold),
-                                                                ),
-                                                                Text(numberOfSets ==
-                                                                        1
-                                                                    ? "$numberOfSets Set"
-                                                                    : "$numberOfSets Sets")
-                                                              ])
-                                                        ]);
-                                                  } else {
-                                                    return Text("No exercise found");
-                                                  }
-                                                },
-                                              ));
-                                            }),
-                                      ),
-                                      routineData['exercises'].length > 3?
-                                            Center(child:Text("and ${routineData['exercises'].length - 3} exercises more",style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),)
-                                            ):SizedBox.shrink(),
-    
-                                    ],
-                                  ))));
+                                                                      'imageUrl'],
+                                                              height: 40,
+                                                              width: 40,
+                                                            ),
+                                                            SizedBox(
+                                                              width: 15,
+                                                            ),
+                                                            Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Text(
+                                                                    exerciseData[
+                                                                        "name"],
+                                                                    style: TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .bold),
+                                                                  ),
+                                                                  Text(numberOfSets ==
+                                                                          1
+                                                                      ? "$numberOfSets Set"
+                                                                      : "$numberOfSets Sets")
+                                                                ])
+                                                          ]);
+                                                    } else {
+                                                      return Text("No exercise found");
+                                                    }
+                                                  },
+                                                ));
+                                              }),
+                                        ),
+                                        routineData['exercises'].length > 3?
+                                              Center(child:Text("and ${routineData['exercises'].length - 3} exercises more",style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),)
+                                              ):SizedBox.shrink(),
+                                
+                                      ],
+                                    ))),
+                          ));
                     });
               } else {
                 return Text("No routines created");
               }
             }));
+  }
+
+  void routineDetailView(BuildContext context, Map<String, dynamic> routineData) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RoutineDetailPage(
+          routineId: routineData["routineId"],
+          routineData: routineData,
+        ),
+      ),
+    );
+  }
+   void routineEdit(BuildContext context, Map<String, dynamic> routineData) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditRoutinesPage(
+          routineId: routineData["routineId"],
+          routineData: routineData,
+        ),
+      ),
+    );
   }
 }

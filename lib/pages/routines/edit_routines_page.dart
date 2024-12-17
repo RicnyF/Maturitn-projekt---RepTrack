@@ -1,42 +1,104 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/helper/helper_functions.dart';
-import 'package:uuid/uuid.dart';
 import 'package:rep_track/utils/logger.dart';
-class AddRoutinesPage extends StatefulWidget {
-  const AddRoutinesPage({super.key});
+import 'package:uuid/uuid.dart';
+
+class EditRoutinesPage extends StatefulWidget {
+  final String routineId;
+  final Map<String, dynamic> routineData;
+  const EditRoutinesPage({
+    super.key,
+    required this.routineId,
+    required this.routineData,
+  });
 
   @override
-  State<AddRoutinesPage> createState() => _AddRoutinesPageState();
+  State<EditRoutinesPage> createState() => _EditRoutinesPageState();
 }
 
-class _AddRoutinesPageState extends State<AddRoutinesPage> {
-  var uuid = Uuid();
+class _EditRoutinesPageState extends State<EditRoutinesPage> {
+  
+    var uuid = Uuid();
   Map<String, List<Map<String, dynamic>>> setsPerExercise = {};
   Map<String, Map<String, dynamic>> selectedTypes = {};
   final nameController = TextEditingController();
   final firestore = FirebaseFirestore.instance;
-  List<String> selectedExercises = [];
+  List<Map<String, String>> selectedExercises = []; 
+
   List<Map<String, dynamic>> exerciseDetails = [];
   Map<String, Duration> restTimers = {};
   Map<String, TextEditingController> noteControllers = {};
   final User? currentUser = FirebaseAuth.instance.currentUser;
   DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
-  Future<void> selectExercises() async {
-    final result = await Navigator.pushNamed(context, '/select_exercises_page');
-    
-    if (result != null && result is List<String>) {
-      setState(() {
-        selectedExercises += result;
-      });
+  
+ @protected
+@mustCallSuper
+@override
+void initState() {
+  super.initState();
+  
+  nameController.text = widget.routineData["name"]; 
+  
+  if (widget.routineData["exercises"] != null) {
+    for (var exercise in widget.routineData["exercises"]) {
+      final String exerciseId = exercise["id"];
+      final String uuid = exercise["uuid"];
       
-      fetchExerciseDetails();
+    selectedExercises.add({"uuid": uuid, "id": exerciseId});
+      print(selectedExercises);
+      setsPerExercise[uuid] = (exercise["sets"] as List<dynamic>?)
+              ?.map((set) => Map<String, dynamic>.from(set))
+              .toList() ??
+          [
+            {"setType": "1", "weight": "", "reps": ""}
+          ];
+
+      
+      restTimers[uuid] = Duration(seconds: exercise["restTimer"] ?? 0);
+
+      
+      noteControllers[uuid] = TextEditingController(text: exercise["notes"] ?? "");
+
+      
+      selectedTypes.putIfAbsent(uuid, () => {"setType": "1", "setNumber": 1});
     }
   }
+
+  fetchExerciseDetails();
+}
+  Future<void> selectExercises() async {
+  final result = await Navigator.pushNamed(context, '/select_exercises_page');
+
+  if (result != null && result is List<String>) {
+    setState(() {
+      for (var id in result) {
+       
+        final newUuid = uuid.v1();
+
+        
+        selectedExercises.add({
+          "uuid": newUuid,
+          "id": id,
+        });
+
+        
+        setsPerExercise[newUuid] = [
+          {"setType": "1", "weight": "", "reps": ""}
+        ];
+        restTimers[newUuid] = Duration(seconds: 0);
+        noteControllers[newUuid] = TextEditingController();
+      }
+    });
+
+    fetchExerciseDetails();
+    print(selectedExercises);
+  }
+}
 
   void checkKeys() {
     noteControllers.keys
@@ -83,43 +145,60 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
       return;
     }
 
-    final snapshot = await firestore
-        .collection('Exercises')
-        .where(FieldPath.documentId, whereIn: selectedExercises.toSet().toList())
-        .get();
+    final List<String> exerciseIds = selectedExercises
+    .map((exercise) => exercise["id"] as String)
+    .toList();
+
+final snapshot = await firestore
+    .collection('Exercises')
+    .where(FieldPath.documentId, whereIn: exerciseIds)
+    .get();
+
 
     final exerciseMap = {for (var doc in snapshot.docs) doc.id: doc.data()};
 
     setState(() {
-      exerciseDetails = selectedExercises
-          .map((id) {
-            final uniqueId = uuid.v1();
-            final exercise = exerciseMap[id];
-            selectedTypes.putIfAbsent(uniqueId, () => {"setType": "1", "setNumber": 1});
-            if (!setsPerExercise.containsKey(uniqueId)) {
-              setsPerExercise[uniqueId] = [
-                {"setType": "1", "weight": "", "reps": ""}
-              ];
-            }
-            noteControllers.putIfAbsent(uniqueId, () => TextEditingController());
-            if (exercise != null) {
-              return {
-                'id': id,
-                "uuid": uniqueId,
-                ...exercise,
-              };
-            }
-            return null;
-          })
-          .whereType<Map<String, dynamic>>()
-          .toList();
-    });
-    checkKeys();
+  exerciseDetails = selectedExercises.map((exerciseData) {
+    final String? uuid = exerciseData["uuid"];
+    final String? exerciseId = exerciseData["id"];
+
+    final existingExercise = widget.routineData["exercises"]?.firstWhere(
+      (exercise) => exercise["uuid"] == uuid,
+      orElse: () => null,
+    );
+
+    final exercise = exerciseMap[exerciseId];
+
+    selectedTypes.putIfAbsent(uuid!, () => {"setType": "1", "setNumber": 1});
+    if (!setsPerExercise.containsKey(uuid)) {
+      setsPerExercise[uuid] = (existingExercise?["sets"] as List<dynamic>?)
+              ?.map((set) => Map<String, dynamic>.from(set))
+              .toList() ??
+          [
+            {"setType": "1", "weight": "", "reps": ""}
+          ];
+    }
+
+    noteControllers.putIfAbsent(
+        uuid,
+        () => TextEditingController(text: existingExercise?["notes"] ?? ""));
+
+    if (exercise != null) {
+      return {
+        "id": exerciseId,
+        "uuid": uuid,
+        ...exercise, 
+      };
+    }
+    return null;
+  }).whereType<Map<String, dynamic>>().toList();
+});
+checkKeys();
   }
 
-  void saveRoutine()async {
-    final routineId = FirebaseFirestore.instance.collection('Routines').doc().id;
-    AppLogger.logInfo("Attempting to save a routine...");
+  void editRoutine()async {
+    final routineId = widget.routineId;
+    AppLogger.logInfo("Attempting to edit a routine...");
 
     showDialog(context: context, builder: (context)=> const Center(
       child: CircularProgressIndicator(),
@@ -155,7 +234,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
         };
       }).toList();
 
-        await FirebaseFirestore.instance.collection('Routines').doc(routineId).set({
+        await FirebaseFirestore.instance.collection('Routines').doc(routineId).update({
           'routineId':routineId,
           'createdBy': currentUser?.uid,
           'name': nameController.text,
@@ -166,14 +245,14 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
         });
       if(mounted){
       Navigator.pop(context);
-      displayMessageToUser("Routine saved successfully!", context);
+      displayMessageToUser("Routine edited successfully!", context);
       }
-      AppLogger.logInfo("Routine saved successfully.");
+      AppLogger.logInfo("Routine edited successfully.");
 
       resetRoutine();
       }
       catch(e, stackTrace){
-      AppLogger.logError("Failed to save routine.", e, stackTrace);
+      AppLogger.logError("Failed to edit routine.", e, stackTrace);
       
     }
     
@@ -214,8 +293,8 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         centerTitle: true,
-        title: Text("Create New Routine"),
-        actions: [IconButton(onPressed: saveRoutine, icon: Icon(Icons.check))],
+        title: Text("Edit routine - ${widget.routineData["name"]}"),
+        actions: [IconButton(onPressed: editRoutine, icon: Icon(Icons.check))],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -324,12 +403,18 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
     if (!setsPerExercise.containsKey(exerciseUuid)) {
       setsPerExercise[exerciseUuid] = [];
     }
-
+ 
     return Column(
       children: [
         ...setsPerExercise[exerciseUuid]!.asMap().entries.map((entry) {
           final index = entry.key;
           final set = entry.value;
+          TextEditingController weightController = TextEditingController(
+          text: set["weight"] == "-" ? "" : set["weight"],
+        );
+        TextEditingController repController = TextEditingController(
+          text: set["reps"] == "-" ? "" : set["reps"],
+        );
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -337,8 +422,11 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                 children: [
                   Text("Set ${index + 1}"),
                   PopupMenuButton(
+                    initialValue: setsPerExercise[exerciseUuid]![index]["setType"],
                     child: Text(set["setType"] ?? "1"),
                     onSelected: (value) {
+                      
+                     
                       setState(() {
                         setsPerExercise[exerciseUuid]![index]["setType"] = value;
                       });
@@ -359,6 +447,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                     width: 60,
                     height: 20,
                     child: TextField(
+                      controller: weightController,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
                         setsPerExercise[exerciseUuid]![index]["weight"] = value;
@@ -379,6 +468,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                     width: 60,
                     height: 20,
                     child: TextField(
+                      controller: repController,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
                         setsPerExercise[exerciseUuid]![index]["reps"] = value;
