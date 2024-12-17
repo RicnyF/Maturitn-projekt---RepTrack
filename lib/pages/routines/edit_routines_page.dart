@@ -260,7 +260,8 @@ checkKeys();
   }
   Future<void> removeExercise(exercise) async {
     setState(() {
-      selectedExercises.remove(exercise['id']);
+
+      selectedExercises.removeWhere((item)=>item["uuid"] ==exercise["uuid"]);
       restTimers.remove(exercise['uuid']);
     });
 
@@ -289,6 +290,7 @@ checkKeys();
 
   @override
   Widget build(BuildContext context) {
+   
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(

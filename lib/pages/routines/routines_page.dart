@@ -251,7 +251,7 @@ class _RoutinesPageState extends State<RoutinesPage> {
                                                                 ])
                                                           ]);
                                                     } else {
-                                                      return Text("No exercise found");
+                                                      return Text("");
                                                     }
                                                   },
                                                 ));

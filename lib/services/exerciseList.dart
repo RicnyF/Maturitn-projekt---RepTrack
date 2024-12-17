@@ -135,7 +135,7 @@ class ExerciseListTile extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) =>
-                  ExerciseDetailPage(exerciseId: docID, exerciseData: data),
+                  ExerciseDetailPage(exerciseId: docID,exerciseData: data,),
             ),
           );
         }
@@ -151,7 +151,7 @@ class ExerciseListTile extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: ClipOval(
           child: data['imageUrl'] == ""
-              ? const Icon(Icons.work, size: 40)
+              ? Image.asset("images/no_img.jpg")
               : Image.network(
                   data['imageUrl'],
                   fit: BoxFit.cover,

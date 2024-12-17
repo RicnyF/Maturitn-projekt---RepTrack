@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/components/my_boldtext.dart';
+import 'package:rep_track/pages/edit_exercises_page.dart';
+import 'package:rep_track/pages/exercise%20details/exercise_detail_page.dart';
 import 'package:rep_track/pages/profile_page.dart';
 import 'package:rep_track/services/firestore.dart';
 
@@ -12,10 +14,14 @@ class RoutineDetailPage extends StatelessWidget {
     required this.routineId,
     required this.routineData,
   });
-
+  
   @override
   Widget build(BuildContext context) {
-    final firestoreService = FirestoreService();
+   final firestore = FirestoreService();
+   Map<String, dynamic> extendedData = {};
+   
+   
+    
 
     return Scaffold(
         appBar: AppBar(
@@ -39,13 +45,30 @@ class RoutineDetailPage extends StatelessWidget {
                             routineData['exercises'][subIndex]["id"];
                         var exercise = routineData['exercises'][subIndex];
                         List sets = exercise['sets'] as List<dynamic>;
-
-
+                        
+                        
+                        print(extendedData["name"]);
                         return ListTile(
+                          /* NEED TO FIX THIS !! */
+                /*            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ExerciseDetailPage(
+                    exerciseId: exercise["id"],
+                    exerciseData: extendedData,
+                  ),
+                ),
+              ),*/
                             title: FutureBuilder<DocumentSnapshot>(
-                          future: firestoreService.getDocumentById(
+                          future: firestore.getDocumentById(
                               'Exercises', exerciseId),
                           builder: (context, snapshot) {
+                            if(snapshot.connectionState == ConnectionState.waiting){
+                              return SizedBox(height:500 ,child: Center(child: CircularProgressIndicator(),));
+                            }
+                            if (snapshot.hasError){
+                              return Center(child:Text("Error ${snapshot.error}"));
+                            }
                             if (snapshot.hasData) {
                               Map<String, dynamic> exerciseData =
                                   snapshot.data!.data() as Map<String, dynamic>;
@@ -125,7 +148,7 @@ class RoutineDetailPage extends StatelessWidget {
                         Expanded(
                           child: Column(
                             children: [
-                              Text("${setIndex + 1}"),
+                              Text(set["setType"]?.toString() ??"1"),
                             ],
                           ),
                         ),
