@@ -46,7 +46,20 @@ class _EditExercisesPageState extends State<EditExercisesPage> {
   late String imageUrl;
   final ImagePicker picker = ImagePicker(); 
 final storageRef = FirebaseStorage.instance;
+  void removeImage() {
+  AppLogger.logInfo("Attempting to remove an image...");
 
+  if (_imageFile != null || imageUrl.isNotEmpty) {
+    
+    setState(() {
+      _imageFile = null;
+      imageUrl = "";
+    });
+    AppLogger.logInfo("Image removed successfully.");
+  } else {
+    AppLogger.logInfo("No image to remove.");
+  }
+}
   // Image picker method
   Future<void> _pickImage() async {
     final XFile? pickedImage = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50, maxHeight: 1000, maxWidth: 1000);
@@ -187,7 +200,7 @@ void edit() async{
         centerTitle: true,
         automaticallyImplyLeading: false,
         backgroundColor: Theme.of(context).colorScheme.primary,
-        leading: IconButton(onPressed: delete, icon: Icon(Icons.delete)),
+        leading: IconButton(onPressed: delete, icon: Icon(Icons.delete) ),
         actions: [
           IconButton(onPressed: ()=> Navigator.pop(context), icon: Icon(Icons.cancel), color: Theme.of(context).colorScheme.inversePrimary,)
         ],
@@ -200,13 +213,13 @@ void edit() async{
         
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-         GestureDetector(
-  onTap: _pickImage,
-  child: Center(
+         Center(
     child: Stack(
       alignment: Alignment.topRight,
       children: [
-        ClipOval(
+        GestureDetector(
+  onTap: _pickImage,
+  child: ClipOval(
           child: _imageFile != null
               ? Image.file(
                   _imageFile!,
@@ -246,11 +259,27 @@ void edit() async{
                       child: Icon(Icons.camera_alt, size: 50),
                     ),
         ),
-        
-        Positioned(
+        ),
+         Positioned(
           top: 5,
           right: 5,
-          child: Container(
+          child: _imageFile != null?GestureDetector(
+  onTap: removeImage,
+  child:Container(
+            padding: EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.red,
+            ),
+            child: Icon(
+              Icons.remove,
+              size: 30,
+              color: Colors.white,
+            ),
+          ),
+        ):GestureDetector(
+  onTap: _pickImage,
+  child:Container(
             padding: EdgeInsets.all(3),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -261,12 +290,11 @@ void edit() async{
               size: 30,
               color: Colors.white,
             ),
-          ),
-        ),
+          )))
       ],
     ),
   ),
-),
+
 
         SizedBox(height: 10,),
          const Row(
@@ -330,7 +358,31 @@ void edit() async{
 
               controller: equipmentController,
             ),
-          MyLoginButton(text: "Edit", onTap: edit)           
+            SizedBox(height: 20,),
+          GestureDetector(
+      onTap: edit,
+      child: Center(
+        child: Container(
+          width: 200,
+          
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+          child: Center(
+            child:Text(
+              "Submit",
+              style:const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              )
+              )
+            )
+        ),
+      ),
+
+    )       
         ],
 
      

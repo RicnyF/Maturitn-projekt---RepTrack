@@ -172,7 +172,7 @@ class ExerciseListTile extends StatelessWidget {
               isSelected ? Icons.check_box : Icons.check_box_outline_blank,
               color: isSelected ? Colors.blue : Colors.grey,
             )
-          : TextButton(
+          : /*TextButton(
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -190,7 +190,7 @@ class ExerciseListTile extends StatelessWidget {
                 backgroundColor: Colors.blue,
               ),
               child: const Text("Edit"),
-            ),
+            ),*/null
     );
   }
 }

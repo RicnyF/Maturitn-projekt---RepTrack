@@ -17,6 +17,18 @@ class RoutinesPage extends StatefulWidget {
 enum SampleItem { itemOne, itemTwo, itemThree }
 
 class _RoutinesPageState extends State<RoutinesPage> {
+  double calculateHeight(int length){
+    if(length==1){
+      return 50;
+    }
+    else if(length ==2){
+      return 120;
+    }
+    else {
+      return 180;
+    }
+  }
+  
   @override
   SampleItem? selectedItem;
 
@@ -181,7 +193,7 @@ class _RoutinesPageState extends State<RoutinesPage> {
                                           height: 6,
                                         ),
                                         SizedBox(
-                                          height: 200,
+                                          height: calculateHeight(routineData["exercises"].length),
                                           child: ListView.builder(
                                               physics:
                                                   NeverScrollableScrollPhysics(),
@@ -257,9 +269,15 @@ class _RoutinesPageState extends State<RoutinesPage> {
                                                 ));
                                               }),
                                         ),
-                                        routineData['exercises'].length > 3?
-                                              Center(child:Text("and ${routineData['exercises'].length - 3} exercises more",style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),)
-                                              ):SizedBox.shrink(),
+                                        
+                                        Padding(
+                                          padding: EdgeInsets.fromLTRB(20, 5, 10,0),
+                                          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [routineData['exercises'].length > 3?
+                                                Center(child:Text("and ${routineData['exercises'].length - 3} more",style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),)
+                                                ):SizedBox.shrink(),
+                                            TextButton(onPressed: (){},style: ButtonStyle(fixedSize: WidgetStatePropertyAll(Size(100,25)),shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),backgroundColor: WidgetStatePropertyAll(Colors.cyan)), child: Text("Start"))
+                                          ],),
+                                        )      
                                 
                                       ],
                                     ))),
