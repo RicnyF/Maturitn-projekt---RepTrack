@@ -335,9 +335,9 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
             children: [
               Column(
                 children: [
-                  Text("Set ${index + 1}"),
+                  Text("Set"),
                   PopupMenuButton(
-                    child: Text(set["setType"] ?? "1"),
+                    child: Text(set["setType"] ?? index+1),
                     onSelected: (value) {
                       setState(() {
                         setsPerExercise[exerciseUuid]![index]["setType"] = value;
@@ -345,7 +345,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                     },
                     itemBuilder: (context) => [
                       const PopupMenuItem(value: "W", child: Text('Warm up set')),
-                      const PopupMenuItem(value: "1", child: Text('Normal set')),
+                      PopupMenuItem(value: "${index+1}", child: Text('Normal set')),
                       const PopupMenuItem(value: "F", child: Text('Failure set')),
                       const PopupMenuItem(value: "D", child: Text('Drop set')),
                     ],
@@ -409,9 +409,11 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                   child: TextButton(
                     onPressed: () {
                     setState(() {
+                      final nextIndex = setsPerExercise[exerciseUuid]!.length + 1;
+
                       if (setsPerExercise[exerciseUuid] != null) {
                         setsPerExercise[exerciseUuid]!.add({
-                          "setType": "1",
+                          "setType": nextIndex.toString(),
                           "weight": "",
                           "reps": "",
                         });
