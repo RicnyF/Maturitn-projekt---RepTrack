@@ -29,7 +29,7 @@ void _onItemTapped(int index) {
     _pageController.animateToPage(_selectedIndex, duration: Duration(milliseconds: 200),curve: Curves.linear);
   });
 }
-static const List<Widget> _pages = <Widget>[
+static final List<Widget> _pages = <Widget>[
  FriendsPage(),
  WorkoutPage(),
 

@@ -7,8 +7,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/helper/helper_functions.dart';
+import 'package:timer_count_down/timer_controller.dart';
 import 'package:uuid/uuid.dart';
 import 'package:rep_track/utils/logger.dart';
+import 'package:timer_count_down/timer_count_down.dart';
 class StartNewWorkoutPage extends StatefulWidget {
   const StartNewWorkoutPage({super.key});
 
@@ -18,7 +20,9 @@ class StartNewWorkoutPage extends StatefulWidget {
 
 class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
   var uuid = Uuid();
-  late Timer timer; //
+  late Timer timer;
+  Map<String,CountdownController> countdownControllers={};
+  DateFormat format = DateFormat.ms();
   String elapsedTime = "00:00:00"; 
   final stopwatch = Stopwatch();
   Map<String, Map<int, bool>> done = {};
@@ -214,7 +218,7 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
           height: 250,
           child: CupertinoTimerPicker(
             mode: CupertinoTimerPickerMode.ms,
-            initialTimerDuration: restTimers[exerciseUuid] ?? Duration(minutes: 0, seconds: 0),
+            initialTimerDuration: restTimers[exerciseUuid] ?? Duration(minutes: 3, seconds: 0),
             onTimerDurationChanged: (Duration newDuration) {
               setState(() {
                 restTimers[exerciseUuid] = newDuration;
@@ -284,9 +288,10 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
                     ? exerciseDetails.map((exercise) {
                         
                         final exerciseUuid = exercise['uuid'];
-                        final timer = restTimers[exerciseUuid] ?? Duration(minutes: 0, seconds: 0);
-                        final timerDisplay = "${timer.inMinutes}m ${timer.inSeconds % 60}s";
-
+                        final restTimer = restTimers[exerciseUuid] ?? Duration(minutes: 3, seconds: 0);
+                        final timerDisplay = "${restTimer.inMinutes}m ${restTimer.inSeconds % 60}s";
+                        restTimers[exerciseUuid] = Duration(minutes: 3, seconds: 0);
+                        restTimers.putIfAbsent(exerciseUuid,()=> Duration(minutes: 3, seconds: 0));
                         return ListTile(
                           
                           title: Row(
@@ -362,6 +367,7 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
                   ),
                 ),
               ),
+              
             ],
           ),
         ),
@@ -468,7 +474,8 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
                   setState((){
                     if(done[exerciseUuid]![index]!= true){
                       done[exerciseUuid]![index]= true;
-                      
+                      print(restTimers);
+                      countdownControllers[exerciseUuid]!.start();
                     }
                     else{
                       done[exerciseUuid]![index]= false;
@@ -521,13 +528,30 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
                               fontSize: 16,
                             ),
                           ),
+                          
                         ],
                       ),
                     ),
                   ),
                 ),
               ),
-        
+        Countdown(
+              
+              seconds: restTimers[exerciseUuid]!.inSeconds,
+              controller: countdownControllers[exerciseUuid],
+              build: (_, double time) => Text(
+                time.toString(),
+                style: TextStyle(
+                  fontSize: 100,
+                ),
+              ),
+              interval: Duration(milliseconds: 100),
+              onFinished: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Timer is done!'),
+                  ),
+                );})
       ],
     );
   }

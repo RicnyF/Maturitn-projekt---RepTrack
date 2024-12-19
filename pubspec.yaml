@@ -46,6 +46,7 @@ dependencies:
   popover: ^0.3.1
   swipeable_page_route: ^0.4.4
   uuid: ^4.5.1
+  timer_count_down: ^2.2.2
   
 dev_dependencies:
   flutter_test:
