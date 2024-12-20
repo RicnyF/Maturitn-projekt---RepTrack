@@ -25,6 +25,7 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
   DateFormat format = DateFormat.ms();
   String elapsedTime = "00:00:00"; 
   final stopwatch = Stopwatch();
+  Map<String, bool> countdownState = {};
   Map<String, Map<int, bool>> done = {};
   Map<String, List<Map<String, dynamic>>> setsPerExercise = {};
   Map<String, Map<String, dynamic>> selectedTypes = {};
@@ -44,13 +45,140 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
     
     if (result != null && result is List<String>) {
       setState(() {
-        selectedExercises += result;
+        selectedExercises.addAll(result.where((id)=> !selectedExercises.contains(id)));
       });
       
       fetchExerciseDetails();
     }
   }
+void showCountdownOverlay(String exerciseUuid) {
+  double deficit = 0;
+  double totalDuration = restTimers[exerciseUuid]!.inSeconds.toDouble();
+  double remainingTime = totalDuration;
+  bool paused= false;
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            contentPadding: EdgeInsets.zero,
+            content: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.height * 0.25, // Increased height
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                 
+                      Text("Rest timer",style: TextStyle(fontSize: 28),),
+                      
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            if (remainingTime - 15 > 0) {
+                              deficit -= 15;
+                            }
+                          });
+                        },
+                        child: Text("-15", style: TextStyle(color: Colors.red)),
+                      ),
+                      Countdown(
+                        seconds: totalDuration.toInt(),
+                        controller: countdownControllers[exerciseUuid],
+                        build: (_, double time) {
+                          remainingTime = time + deficit;
+                          final progress = (remainingTime / totalDuration).clamp(0.0, 1.0);
 
+                          return Column(
+                            children: [
+                              Text(
+                                remainingTime.toStringAsFixed(0),
+                                style: TextStyle(
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.4, 
+                                height: 10, 
+                                child: LinearProgressIndicator(
+                                  value: progress,
+                                  color: Colors.blue,
+                                  backgroundColor: Colors.grey[300],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                        onFinished: () {
+                          Navigator.pop(context);
+                          countdownControllers[exerciseUuid]!.restart();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Rest time completed!')),
+                          );
+                        },
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            deficit += 15;
+                          });
+                        },
+                        child: Text("+15", style: TextStyle(color: Colors.blue)),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          if(!paused){
+                            setState((){paused= true;});
+                          countdownControllers[exerciseUuid]!.pause();
+                          }
+                          else{
+                            setState((){paused= false;});
+                            
+                            countdownControllers[exerciseUuid]!.start();
+
+                          }
+                        },
+                        child: Text(!paused?'Pause':"Resume",style: TextStyle(color: Theme.of(context).colorScheme.inverseSurface)),
+                      ),
+                      SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          countdownControllers[exerciseUuid]!.restart();
+                        },
+                        child: Text('Restart',style: TextStyle(color: Theme.of(context).colorScheme.inverseSurface)),
+                      ),
+                      SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          countdownControllers[exerciseUuid]!.restart();
+                        },
+                        child: Text('Skip',style: TextStyle(color: Theme.of(context).colorScheme.inverseSurface)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+  
   void checkKeys() {
     noteControllers.keys
         .where((key) => !exerciseDetails.any((exercise) => exercise['uuid'] == key))
@@ -88,46 +216,46 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
   }
 
   Future<void> fetchExerciseDetails() async {
-    
-    if (selectedExercises.isEmpty) {
-      resetRoutine();
-      print("Reset");
-      return;
-    }
-
-    final snapshot = await firestore
-        .collection('Exercises')
-        .where(FieldPath.documentId, whereIn: selectedExercises.toSet().toList())
-        .get();
-
-    final exerciseMap = {for (var doc in snapshot.docs) doc.id: doc.data()};
-
-    setState(() {
-      exerciseDetails = selectedExercises
-          .map((id) {
-            final uniqueId = uuid.v1();
-            final exercise = exerciseMap[id];
-            selectedTypes.putIfAbsent(uniqueId, () => {"setType": "1", "setNumber": 1});
-            if (!setsPerExercise.containsKey(uniqueId)) {
-              setsPerExercise[uniqueId] = [
-                {"setType": "1", "weight": "", "reps": ""}
-              ];
-            }
-            noteControllers.putIfAbsent(uniqueId, () => TextEditingController());
-            if (exercise != null) {
-              return {
-                'id': id,
-                "uuid": uniqueId,
-                ...exercise,
-              };
-            }
-            return null;
-          })
-          .whereType<Map<String, dynamic>>()
-          .toList();
-    });
-    checkKeys();
+  if (selectedExercises.isEmpty) {
+    resetRoutine();
+    print("Reset");
+    return;
   }
+
+  final snapshot = await firestore
+      .collection('Exercises')
+      .where(FieldPath.documentId, whereIn: selectedExercises.toSet().toList())
+      .get();
+
+  final exerciseMap = {for (var doc in snapshot.docs) doc.id: doc.data()};
+
+  setState(() {
+    for (final id in selectedExercises) {
+      final existing = exerciseDetails.any((exercise) => exercise['id'] == id);
+      if (!existing) {
+        final exercise = exerciseMap[id];
+        if (exercise != null) {
+          final uniqueId = uuid.v1();
+          exerciseDetails.add({
+            'id': id, 
+            'uuid': uniqueId,
+            ...exercise,
+          });
+
+          selectedTypes.putIfAbsent(uniqueId, () => {"setType": "1", "setNumber": 1});
+          setsPerExercise.putIfAbsent(uniqueId, () => [
+            {"setType": "1", "weight": "", "reps": ""}
+          ]);
+          restTimers.putIfAbsent(uniqueId, () => Duration(minutes: 3, seconds: 0));
+          noteControllers.putIfAbsent(uniqueId, () => TextEditingController());
+        }
+      }
+    }
+  });
+
+  checkKeys(); 
+}
+
   void saveWorkout()async{
 
   }
@@ -222,6 +350,7 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
             onTimerDurationChanged: (Duration newDuration) {
               setState(() {
                 restTimers[exerciseUuid] = newDuration;
+                print(restTimers[exerciseUuid]);
               });
             },
           ),
@@ -289,9 +418,11 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
                         
                         final exerciseUuid = exercise['uuid'];
                         final restTimer = restTimers[exerciseUuid] ?? Duration(minutes: 3, seconds: 0);
+                        
                         final timerDisplay = "${restTimer.inMinutes}m ${restTimer.inSeconds % 60}s";
-                        restTimers[exerciseUuid] = Duration(minutes: 3, seconds: 0);
                         restTimers.putIfAbsent(exerciseUuid,()=> Duration(minutes: 3, seconds: 0));
+                        countdownControllers.putIfAbsent(exerciseUuid,()=> CountdownController());
+                        countdownState.putIfAbsent(exerciseUuid,()=> false);
                         return ListTile(
                           
                           title: Row(
@@ -475,10 +606,17 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
                     if(done[exerciseUuid]![index]!= true){
                       done[exerciseUuid]![index]= true;
                       print(restTimers);
-                      countdownControllers[exerciseUuid]!.start();
+                      countdownState[exerciseUuid]= true;
+                      showCountdownOverlay(exerciseUuid);
+
+                      Future.delayed(Duration(milliseconds: 500),(){
+                          countdownControllers[exerciseUuid]!.start();
+                      });
                     }
                     else{
                       done[exerciseUuid]![index]= false;
+                      
+
                     }
                     
                   });
@@ -535,23 +673,8 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
                   ),
                 ),
               ),
-        Countdown(
-              
-              seconds: restTimers[exerciseUuid]!.inSeconds,
-              controller: countdownControllers[exerciseUuid],
-              build: (_, double time) => Text(
-                time.toString(),
-                style: TextStyle(
-                  fontSize: 100,
-                ),
-              ),
-              interval: Duration(milliseconds: 100),
-              onFinished: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Timer is done!'),
-                  ),
-                );})
+        
+         
       ],
     );
   }
