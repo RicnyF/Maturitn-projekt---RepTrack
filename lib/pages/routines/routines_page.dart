@@ -4,6 +4,7 @@ import 'package:rep_track/helper/helper_functions.dart';
 import 'package:rep_track/pages/profile_page.dart';
 import 'package:rep_track/pages/routines/edit_routines_page.dart';
 import 'package:rep_track/pages/routines/routine_detail_page.dart';
+import 'package:rep_track/pages/start_new_workout_page.dart';
 import 'package:rep_track/services/firestore.dart';
 import 'package:rep_track/utils/logger.dart';
 
@@ -275,7 +276,43 @@ class _RoutinesPageState extends State<RoutinesPage> {
                                           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [routineData['exercises'].length > 3?
                                                 Center(child:Text("and ${routineData['exercises'].length - 3} more",style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),)
                                                 ):SizedBox.shrink(),
-                                            TextButton(onPressed: (){},style: ButtonStyle(fixedSize: WidgetStatePropertyAll(Size(100,25)),shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),backgroundColor: WidgetStatePropertyAll(Colors.cyan)), child: Text("Start"))
+                                            TextButton(onPressed: ()=>Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => StartNewWorkoutPage(
+                                            routineRestTimers: {
+                                              for (var exercise in routineData['exercises'])
+                                                exercise['id']: Duration(seconds: exercise['restTimer']),
+                                            },
+                                            routineSelectedTypes: {
+                                              for (var exercise in routineData['exercises'])
+                                                exercise['id']: {"setType": "1", "setNumber": 1},
+                                            },
+                                            routineSelectedExercises: routineData['exercises']
+                                                .map<String>((exercise) => exercise['id'] as String)
+                                                .toList(),
+                                            routineNoteControllers: {
+                                              for (var exercise in routineData['exercises'])
+                                                exercise['id']: TextEditingController(text: exercise['notes'] ?? ""),
+                                            },
+                                            routineWeightControllers: {
+                                              for (var exercise in routineData['exercises'])
+                                                exercise['id']: {
+                                                  for (var i = 0; i < exercise['sets'].length; i++)
+                                                    i: TextEditingController(text: exercise['sets'][i]['weight'] ?? ""),
+                                                },
+                                            },
+                                            routineRepControllers: {
+                                              for (var exercise in routineData['exercises'])
+                                                exercise['id']: {
+                                                  for (var i = 0; i < exercise['sets'].length; i++)
+                                                    i: TextEditingController(text: exercise['sets'][i]['reps'] ?? ""),
+                                                },
+                                            },
+                                          ),
+                                        ),
+                                        )
+                                          ,style: ButtonStyle(fixedSize: WidgetStatePropertyAll(Size(100,25)),shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),backgroundColor: WidgetStatePropertyAll(Colors.cyan)), child: Text("Start"))
                                           ],),
                                         )      
                                 

@@ -12,7 +12,20 @@ import 'package:timer_count_down/timer_controller.dart';
 import 'package:rep_track/utils/logger.dart';
 import 'package:timer_count_down/timer_count_down.dart';
 class StartNewWorkoutPage extends StatefulWidget {
-  const StartNewWorkoutPage({super.key});
+  Map<String, Duration> routineRestTimers;
+  Map<String, Map<String, dynamic>> routineSelectedTypes;
+  List<String> routineSelectedExercises;
+  Map<String, TextEditingController> routineNoteControllers;
+  Map<String, Map<int, TextEditingController>> routineWeightControllers;
+  Map<String, Map<int, TextEditingController>> routineRepControllers;
+  StartNewWorkoutPage({super.key,
+  this.routineRestTimers = const{},
+  this.routineSelectedTypes = const {},
+  this.routineSelectedExercises = const [],
+  this.routineNoteControllers = const {},
+  this.routineWeightControllers = const{},
+  this.routineRepControllers = const {},
+  });
 
   @override
   State<StartNewWorkoutPage> createState() => _StartNewWorkoutPageState();
@@ -155,6 +168,9 @@ void showCountdownOverlay(String id) {
                       ElevatedButton(
                         onPressed: () {
                           countdownControllers[id]!.restart();
+                          setState((){
+                            deficit=0;
+                          });
                         },
                         child: Text('Restart',style: TextStyle(color: Theme.of(context).colorScheme.inverseSurface)),
                       ),
@@ -216,48 +232,60 @@ void showCountdownOverlay(String id) {
   }
 
   Future<void> fetchExerciseDetails() async {
-  if (selectedExercises.isEmpty) {
-    resetRoutine();
-    print("Reset");
-    return;
+    
+    if (selectedExercises.isEmpty) {
+      resetRoutine();
+      print("Reset");
+      return;
+    }
+
+    final snapshot = await firestore
+        .collection('Exercises')
+        .where(FieldPath.documentId, whereIn: selectedExercises.toSet().toList())
+        .get();
+
+    final exerciseMap = {for (var doc in snapshot.docs) doc.id: doc.data()};
+
+    setState(() {
+      exerciseDetails = selectedExercises
+          .map((id) {
+            
+            final exercise = exerciseMap[id];
+            selectedTypes.putIfAbsent(id, () => {"setType": "1", "setNumber": 1});
+            if (!setsPerExercise.containsKey(id)) {
+              setsPerExercise[id] = [
+                {"setType": "1", "weight": "", "reps": ""}
+              ];
+            }
+            noteControllers.putIfAbsent(id, () => TextEditingController());
+            if (exercise != null) {
+              return {
+                'id': id,
+                
+                ...exercise,
+              };
+            }
+            return null;
+          })
+          .whereType<Map<String, dynamic>>()
+          .toList();
+    });
+    checkKeys();
   }
 
-  final snapshot = await firestore
-      .collection('Exercises')
-      .where(FieldPath.documentId, whereIn: selectedExercises.toSet().toList())
-      .get();
-
-  final exerciseMap = {for (var doc in snapshot.docs) doc.id: doc.data()};
-
-  setState(() {
-    for (final id in selectedExercises) {
-      final existing = exerciseDetails.any((exercise) => exercise['id'] == id);
-      if (!existing) {
-        final exercise = exerciseMap[id];
-        if (exercise != null) {
-         
-          exerciseDetails.add({
-            'id': id, 
-            
-            ...exercise,
-          });
-
-          selectedTypes.putIfAbsent(id, () => {"setType": "1", "setNumber": 1});
-          setsPerExercise.putIfAbsent(id, () => [
-            {"setType": "1", "weight": "", "reps": ""}
-          ]);
-          restTimers.putIfAbsent(id, () => Duration(minutes: 3, seconds: 0));
-          noteControllers.putIfAbsent(id, () => TextEditingController());
-        }
-      }
-    }
-  });
-
-  checkKeys(); 
-}
-
   void saveWorkout()async{
-
+    final workoutId = FirebaseFirestore.instance.collection('Routines').doc().id;
+    AppLogger.logInfo("Attempting to save a workout...");
+showDialog(context: context, builder: (context)=> const Center(
+      child: CircularProgressIndicator(),
+    )
+    );
+    if(done.values.any((exercise)=> exercise.containsValue(false))){
+      Navigator.pop(context);
+      displayMessageToUser("All exercises must be done", context);
+      AppLogger.logError("Some exercises are not done.", );
+    }
+    
   }
   void saveRoutine()async {
     final routineId = FirebaseFirestore.instance.collection('Routines').doc().id;
@@ -324,18 +352,15 @@ void showCountdownOverlay(String id) {
   Future<void> removeExercise(exercise) async {
     setState(() {
       selectedExercises.remove(exercise['id']);
-      
-    });
+      restTimers.remove(exercise['id']);
+      done.remove(exercise["id"]);
+      selectedTypes.remove(exercise["id"]);
+      weightControllers.remove(exercise["id"]);
+      repControllers.remove(exercise["id"]);
+      noteControllers.remove(exercise["id"]);
+      });
 
     fetchExerciseDetails();
-    print(restTimers);
-    print (noteControllers);
-    print(selectedExercises);
-    print(weightControllers);
-    print(
-      selectedTypes);
-    print(exerciseDetails
-    );
   }
 
   void showTimerPicker(String id) {
@@ -358,15 +383,28 @@ void showCountdownOverlay(String id) {
       },
     );
   }
-  @override
-  void initState(){
-    super.initState();
-    stopwatch.start();
-    timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
-      setState(() {
-        elapsedTime = _formatDuration(stopwatch.elapsed);
-      });
-  });}
+ @override
+void initState() {
+  super.initState();
+
+  
+  restTimers = widget.routineRestTimers.isNotEmpty ? widget.routineRestTimers : restTimers;
+  selectedTypes = widget.routineSelectedTypes.isNotEmpty ? widget.routineSelectedTypes : selectedTypes;
+  selectedExercises = widget.routineSelectedExercises.isNotEmpty ? widget.routineSelectedExercises : selectedExercises;
+  noteControllers = widget.routineNoteControllers.isNotEmpty ? widget.routineNoteControllers : noteControllers;
+  weightControllers = widget.routineWeightControllers.isNotEmpty ? widget.routineWeightControllers : weightControllers;
+  repControllers = widget.routineRepControllers.isNotEmpty ? widget.routineRepControllers : repControllers;
+
+ 
+  stopwatch.start();
+  timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+    setState(() {
+      elapsedTime = _formatDuration(stopwatch.elapsed);
+    });
+  });
+  fetchExerciseDetails();
+}
+
    @override
   void dispose() {
     selectedExercises.clear();
@@ -569,7 +607,10 @@ void showCountdownOverlay(String id) {
                         controller: weightControllers[id]![index],
 
                         onChanged: (value) {
-                          setsPerExercise["id"]![index]["weight"] = value;
+                          setsPerExercise[id]![index]["weight"] = value;
+                          print(index);
+                          print(setsPerExercise[id]!.length-1);
+                          
                         },
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
@@ -640,14 +681,26 @@ void showCountdownOverlay(String id) {
                       final nextIndex = setsPerExercise[id]!.length + 1;
 
                       if (setsPerExercise[id] != null) {
+                        if(weightControllers[id]![nextIndex-2]!.text != ""){
+                          
+                        
+                        setsPerExercise[id]!.add({
+                          "setType": nextIndex.toString(),
+                          "weight": weightControllers[id]![nextIndex-2]!.text,
+                          "reps": "",
+                        });
+                        }else{
                         setsPerExercise[id]!.add({
                           "setType": nextIndex.toString(),
                           "weight": "",
                           "reps": "",
                         });
-                        
+                        }
                       }
+                      weightControllers[id]![nextIndex-1] = TextEditingController();
+                      weightControllers[id]![nextIndex-1]!.text =  weightControllers[id]![nextIndex-2]!.text;
                     });
+
                     },
                     style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Theme.of(context).colorScheme.secondary)),
                     child: Padding(

@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/helper/helper_functions.dart';
 import 'package:rep_track/utils/logger.dart';
-import 'package:uuid/uuid.dart';
+
 
 class EditRoutinesPage extends StatefulWidget {
   final String routineId;
@@ -23,7 +23,7 @@ class EditRoutinesPage extends StatefulWidget {
 
 class _EditRoutinesPageState extends State<EditRoutinesPage> {
   
-    var uuid = Uuid();
+  
   Map<String, List<Map<String, dynamic>>> setsPerExercise = {};
   Map<String, Map<String, dynamic>> selectedTypes = {};
   final nameController = TextEditingController();
@@ -47,11 +47,11 @@ void initState() {
   if (widget.routineData["exercises"] != null) {
     for (var exercise in widget.routineData["exercises"]) {
       final String exerciseId = exercise["id"];
-      final String uuid = exercise["uuid"];
+     
       
-    selectedExercises.add({"uuid": uuid, "id": exerciseId});
+    selectedExercises.add({"id": exerciseId});
       print(selectedExercises);
-      setsPerExercise[uuid] = (exercise["sets"] as List<dynamic>?)
+      setsPerExercise[widget.routineId] = (exercise["sets"] as List<dynamic>?)
               ?.map((set) => Map<String, dynamic>.from(set))
               .toList() ??
           [
@@ -59,13 +59,13 @@ void initState() {
           ];
 
       
-      restTimers[uuid] = Duration(seconds: exercise["restTimer"] ?? 0);
+      restTimers[widget.routineId] = Duration(seconds: exercise["restTimer"] ?? 0);
 
       
-      noteControllers[uuid] = TextEditingController(text: exercise["notes"] ?? "");
+      noteControllers[widget.routineId] = TextEditingController(text: exercise["notes"] ?? "");
 
       
-      selectedTypes.putIfAbsent(uuid, () => {"setType": "1", "setNumber": 1});
+      selectedTypes.putIfAbsent(widget.routineId, () => {"setType": "1", "setNumber": 1});
     }
   }
 
@@ -76,25 +76,23 @@ void initState() {
 
   if (result != null && result is List<String>) {
     setState(() {
+      
       for (var id in result) {
-       
-        final newUuid = uuid.v1();
-
-        
+        if(!selectedExercises.any((exercise)=>exercise["id"]==id)){
         selectedExercises.add({
-          "uuid": newUuid,
+          
           "id": id,
         });
-
         
-        setsPerExercise[newUuid] = [
+        
+        setsPerExercise[id] = [
           {"setType": "1", "weight": "", "reps": ""}
         ];
-        restTimers[newUuid] = Duration(seconds: 0);
-        noteControllers[newUuid] = TextEditingController();
-      }
-    });
-
+        restTimers[id] = Duration(seconds: 0);
+        noteControllers[id] = TextEditingController();
+        }
+  }});
+  
     fetchExerciseDetails();
     print(selectedExercises);
   }
@@ -102,7 +100,7 @@ void initState() {
 
   void checkKeys() {
     noteControllers.keys
-        .where((key) => !exerciseDetails.any((exercise) => exercise['uuid'] == key))
+        .where((key) => !exerciseDetails.any((exercise) => exercise['id'] == key))
         .toList()
         .forEach((key) {
       noteControllers[key]?.dispose();
@@ -110,14 +108,14 @@ void initState() {
     });
 
     selectedTypes.keys
-        .where((key) => !exerciseDetails.any((exercise) => exercise['uuid'] == key))
+        .where((key) => !exerciseDetails.any((exercise) => exercise['id'] == key))
         .toList()
         .forEach((key) {
       selectedTypes.remove(key);
     });
   
      setsPerExercise.keys
-        .where((key) => !exerciseDetails.any((exercise) => exercise['uuid'] == key))
+        .where((key) => !exerciseDetails.any((exercise) => exercise['id'] == key))
         .toList()
         .forEach((key) {
       setsPerExercise.remove(key);
@@ -159,19 +157,19 @@ final snapshot = await firestore
 
     setState(() {
   exerciseDetails = selectedExercises.map((exerciseData) {
-    final String? uuid = exerciseData["uuid"];
+    final String? id = exerciseData["id"];
     final String? exerciseId = exerciseData["id"];
 
     final existingExercise = widget.routineData["exercises"]?.firstWhere(
-      (exercise) => exercise["uuid"] == uuid,
+      (exercise) => exercise["id"] == id,
       orElse: () => null,
     );
 
     final exercise = exerciseMap[exerciseId];
 
-    selectedTypes.putIfAbsent(uuid!, () => {"setType": "1", "setNumber": 1});
-    if (!setsPerExercise.containsKey(uuid)) {
-      setsPerExercise[uuid] = (existingExercise?["sets"] as List<dynamic>?)
+    selectedTypes.putIfAbsent(id!, () => {"setType": "1", "setNumber": 1});
+    if (!setsPerExercise.containsKey(id)) {
+      setsPerExercise[id] = (existingExercise?["sets"] as List<dynamic>?)
               ?.map((set) => Map<String, dynamic>.from(set))
               .toList() ??
           [
@@ -180,13 +178,12 @@ final snapshot = await firestore
     }
 
     noteControllers.putIfAbsent(
-        uuid,
+        id,
         () => TextEditingController(text: existingExercise?["notes"] ?? ""));
 
     if (exercise != null) {
       return {
         "id": exerciseId,
-        "uuid": uuid,
         ...exercise, 
       };
     }
@@ -222,15 +219,14 @@ checkKeys();
       Navigator.pop(context);
       try{
         List<Map<String, dynamic>> exerciseData = exerciseDetails.map((exercise) {
-        final uuid = exercise['uuid']; 
+        final id = exercise['id']; 
         return {
-          "uuid": uuid,
-          "id": exercise['id'],
+          "id": id,
           "imageURL": exercise['imageUrl'],
           "name": exercise['name'],
-          "restTimer": restTimers[uuid]?.inSeconds ?? 0,
-          "notes": noteControllers[uuid]?.text ?? '',
-          "sets": setsPerExercise[uuid] ?? [], 
+          "restTimer": restTimers[id]?.inSeconds ?? 0,
+          "notes": noteControllers[id]?.text ?? '',
+          "sets": setsPerExercise[id] ?? [], 
         };
       }).toList();
 
@@ -260,15 +256,16 @@ checkKeys();
   }
   Future<void> removeExercise(exercise) async {
     setState(() {
-
-      selectedExercises.removeWhere((item)=>item["uuid"] ==exercise["uuid"]);
-      restTimers.remove(exercise['uuid']);
+      selectedExercises.remove(exercise['id']);
+      restTimers.remove(exercise['id']);
+      selectedTypes.remove(exercise["id"]);
+      noteControllers.remove(exercise["id"]);
     });
 
     fetchExerciseDetails();
   }
 
-  void showTimerPicker(String exerciseUuid) {
+  void showTimerPicker(String exerciseId) {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -276,10 +273,10 @@ checkKeys();
           height: 250,
           child: CupertinoTimerPicker(
             mode: CupertinoTimerPickerMode.ms,
-            initialTimerDuration: restTimers[exerciseUuid] ?? Duration(minutes: 0, seconds: 0),
+            initialTimerDuration: restTimers[exerciseId] ?? Duration(minutes: 0, seconds: 0),
             onTimerDurationChanged: (Duration newDuration) {
               setState(() {
-                restTimers[exerciseUuid] = newDuration;
+                restTimers[exerciseId] = newDuration;
               });
             },
           ),
@@ -318,8 +315,8 @@ checkKeys();
                 children: selectedExercises.isNotEmpty
                     ? exerciseDetails.map((exercise) {
                         
-                        final exerciseUuid = exercise['uuid'];
-                        final timer = restTimers[exerciseUuid] ?? Duration(minutes: 0, seconds: 0);
+                        final exerciseId = exercise['id'];
+                        final timer = restTimers[exerciseId] ?? Duration(minutes: 0, seconds: 0);
                         final timerDisplay = "${timer.inMinutes}m ${timer.inSeconds % 60}s";
 
                         return ListTile(
@@ -342,12 +339,12 @@ checkKeys();
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               TextField(
-                                controller: noteControllers[exerciseUuid],
+                                controller: noteControllers[exerciseId],
                                 decoration: InputDecoration(labelText: "Add routine notes here"),
                               ),
                               SizedBox(height: 5),
                               GestureDetector(
-                                onTap: () => showTimerPicker(exerciseUuid),
+                                onTap: () => showTimerPicker(exerciseId),
                                 child: Row(
                                   children: [
                                     Icon(Icons.timer),
@@ -358,7 +355,7 @@ checkKeys();
                                 ),
                               ),
                               SizedBox(height: 5),
-                              set(exerciseUuid),
+                              set(exerciseId),
                               SizedBox(height: 5),
                             ],
                           ),
@@ -401,14 +398,14 @@ checkKeys();
     );
   }
 
-  Column set(String exerciseUuid) {
-    if (!setsPerExercise.containsKey(exerciseUuid)) {
-      setsPerExercise[exerciseUuid] = [];
+  Column set(String exerciseId) {
+    if (!setsPerExercise.containsKey(exerciseId)) {
+      setsPerExercise[exerciseId] = [];
     }
  
     return Column(
       children: [
-        ...setsPerExercise[exerciseUuid]!.asMap().entries.map((entry) {
+        ...setsPerExercise[exerciseId]!.asMap().entries.map((entry) {
           final index = entry.key;
           final set = entry.value;
           TextEditingController weightController = TextEditingController(
@@ -424,13 +421,13 @@ checkKeys();
                 children: [
                   Text("Set ${index + 1}"),
                   PopupMenuButton(
-                    initialValue: setsPerExercise[exerciseUuid]![index]["setType"],
+                    initialValue: setsPerExercise[exerciseId]![index]["setType"],
                     child: Text(set["setType"] ?? "1"),
                     onSelected: (value) {
                       
                      
                       setState(() {
-                        setsPerExercise[exerciseUuid]![index]["setType"] = value;
+                        setsPerExercise[exerciseId]![index]["setType"] = value;
                       });
                     },
                     itemBuilder: (context) => [
@@ -452,7 +449,7 @@ checkKeys();
                       controller: weightController,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        setsPerExercise[exerciseUuid]![index]["weight"] = value;
+                        setsPerExercise[exerciseId]![index]["weight"] = value;
                       },
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
@@ -473,7 +470,7 @@ checkKeys();
                       controller: repController,
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        setsPerExercise[exerciseUuid]![index]["reps"] = value;
+                        setsPerExercise[exerciseId]![index]["reps"] = value;
                       },
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
@@ -486,8 +483,8 @@ checkKeys();
               ),
               IconButton(onPressed: (){
                 setState((){
-                  if(setsPerExercise[exerciseUuid]!= null){
-                    setsPerExercise[exerciseUuid]!.removeAt(index);
+                  if(setsPerExercise[exerciseId]!= null){
+                    setsPerExercise[exerciseId]!.removeAt(index);
                   }
                 });
               }, icon: Icon(Icons.remove, color: Colors.red,))
@@ -501,8 +498,8 @@ checkKeys();
                   child: TextButton(
                     onPressed: () {
                     setState(() {
-                      if (setsPerExercise[exerciseUuid] != null) {
-                        setsPerExercise[exerciseUuid]!.add({
+                      if (setsPerExercise[exerciseId] != null) {
+                        setsPerExercise[exerciseId]!.add({
                           "setType": "1",
                           "weight": "",
                           "reps": "",

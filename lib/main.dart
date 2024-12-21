@@ -57,6 +57,7 @@ class MyApp extends StatelessWidget {
         '/home_page':(context)=>HomePage(),
         '/add_routine_page':(context)=>AddRoutinesPage(),
         '/select_exercises_page':(context)=>SelectExercisesPage(),
+        '/start_new_workout_page':(context)=> StartNewWorkoutPage()
       }
     );
   }

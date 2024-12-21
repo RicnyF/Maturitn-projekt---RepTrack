@@ -184,6 +184,8 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
     setState(() {
       selectedExercises.remove(exercise['id']);
       restTimers.remove(exercise['id']);
+      selectedTypes.remove(exercise["id"]);
+      noteControllers.remove(exercise["id"]);
     });
 
     fetchExerciseDetails();
