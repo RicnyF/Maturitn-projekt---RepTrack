@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/helper/helper_functions.dart';
-import 'package:uuid/uuid.dart';
+
 import 'package:rep_track/utils/logger.dart';
 class AddRoutinesPage extends StatefulWidget {
   const AddRoutinesPage({super.key});
@@ -15,7 +15,7 @@ class AddRoutinesPage extends StatefulWidget {
 }
 
 class _AddRoutinesPageState extends State<AddRoutinesPage> {
-  var uuid = Uuid();
+
   Map<String, List<Map<String, dynamic>>> setsPerExercise = {};
   Map<String, Map<String, dynamic>> selectedTypes = {};
   final nameController = TextEditingController();
@@ -31,7 +31,8 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
     
     if (result != null && result is List<String>) {
       setState(() {
-        selectedExercises += result;
+        selectedExercises.addAll(result.where((id)=> !selectedExercises.contains(id)));
+
       });
       
       fetchExerciseDetails();
@@ -40,7 +41,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
 
   void checkKeys() {
     noteControllers.keys
-        .where((key) => !exerciseDetails.any((exercise) => exercise['uuid'] == key))
+        .where((key) => !exerciseDetails.any((exercise) => exercise['id'] == key))
         .toList()
         .forEach((key) {
       noteControllers[key]?.dispose();
@@ -48,14 +49,14 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
     });
 
     selectedTypes.keys
-        .where((key) => !exerciseDetails.any((exercise) => exercise['uuid'] == key))
+        .where((key) => !exerciseDetails.any((exercise) => exercise['id'] == key))
         .toList()
         .forEach((key) {
       selectedTypes.remove(key);
     });
   
      setsPerExercise.keys
-        .where((key) => !exerciseDetails.any((exercise) => exercise['uuid'] == key))
+        .where((key) => !exerciseDetails.any((exercise) => exercise['id'] == key))
         .toList()
         .forEach((key) {
       setsPerExercise.remove(key);
@@ -93,19 +94,19 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
     setState(() {
       exerciseDetails = selectedExercises
           .map((id) {
-            final uniqueId = uuid.v1();
+            
             final exercise = exerciseMap[id];
-            selectedTypes.putIfAbsent(uniqueId, () => {"setType": "1", "setNumber": 1});
-            if (!setsPerExercise.containsKey(uniqueId)) {
-              setsPerExercise[uniqueId] = [
+            selectedTypes.putIfAbsent(id, () => {"setType": "1", "setNumber": 1});
+            if (!setsPerExercise.containsKey(id)) {
+              setsPerExercise[id] = [
                 {"setType": "1", "weight": "", "reps": ""}
               ];
             }
-            noteControllers.putIfAbsent(uniqueId, () => TextEditingController());
+            noteControllers.putIfAbsent(id, () => TextEditingController());
             if (exercise != null) {
               return {
                 'id': id,
-                "uuid": uniqueId,
+                
                 ...exercise,
               };
             }
@@ -143,15 +144,15 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
       Navigator.pop(context);
       try{
         List<Map<String, dynamic>> exerciseData = exerciseDetails.map((exercise) {
-        final uuid = exercise['uuid']; 
+        final id = exercise['id']; 
         return {
-          "uuid": uuid,
-          "id": exercise['id'],
+          
+          "id": id,
           "imageURL": exercise['imageUrl'],
           "name": exercise['name'],
-          "restTimer": restTimers[uuid]?.inSeconds ?? 0,
-          "notes": noteControllers[uuid]?.text ?? '',
-          "sets": setsPerExercise[uuid] ?? [], 
+          "restTimer": restTimers[id]?.inSeconds ?? 0,
+          "notes": noteControllers[id]?.text ?? '',
+          "sets": setsPerExercise[id] ?? [], 
         };
       }).toList();
 
@@ -182,13 +183,13 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
   Future<void> removeExercise(exercise) async {
     setState(() {
       selectedExercises.remove(exercise['id']);
-      restTimers.remove(exercise['uuid']);
+      restTimers.remove(exercise['id']);
     });
 
     fetchExerciseDetails();
   }
 
-  void showTimerPicker(String exerciseUuid) {
+  void showTimerPicker(String id) {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -196,10 +197,10 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
           height: 250,
           child: CupertinoTimerPicker(
             mode: CupertinoTimerPickerMode.ms,
-            initialTimerDuration: restTimers[exerciseUuid] ?? Duration(minutes: 0, seconds: 0),
+            initialTimerDuration: restTimers[id] ?? Duration(minutes: 0, seconds: 0),
             onTimerDurationChanged: (Duration newDuration) {
               setState(() {
-                restTimers[exerciseUuid] = newDuration;
+                restTimers[id] = newDuration;
               });
             },
           ),
@@ -237,8 +238,8 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                 children: selectedExercises.isNotEmpty
                     ? exerciseDetails.map((exercise) {
                         
-                        final exerciseUuid = exercise['uuid'];
-                        final timer = restTimers[exerciseUuid] ?? Duration(minutes: 0, seconds: 0);
+                        final id = exercise['id'];
+                        final timer = restTimers[id] ?? Duration(minutes: 0, seconds: 0);
                         final timerDisplay = "${timer.inMinutes}m ${timer.inSeconds % 60}s";
 
                         return ListTile(
@@ -261,12 +262,12 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               TextField(
-                                controller: noteControllers[exerciseUuid],
+                                controller: noteControllers[id],
                                 decoration: InputDecoration(labelText: "Add routine notes here"),
                               ),
                               SizedBox(height: 5),
                               GestureDetector(
-                                onTap: () => showTimerPicker(exerciseUuid),
+                                onTap: () => showTimerPicker(id),
                                 child: Row(
                                   children: [
                                     Icon(Icons.timer),
@@ -277,7 +278,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                                 ),
                               ),
                               SizedBox(height: 5),
-                              set(exerciseUuid),
+                              set(id),
                               SizedBox(height: 5),
                             ],
                           ),
@@ -320,14 +321,14 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
     );
   }
 
-  Column set(String exerciseUuid) {
-    if (!setsPerExercise.containsKey(exerciseUuid)) {
-      setsPerExercise[exerciseUuid] = [];
+  Column set(String id) {
+    if (!setsPerExercise.containsKey(id)) {
+      setsPerExercise[id] = [];
     }
 
     return Column(
       children: [
-        ...setsPerExercise[exerciseUuid]!.asMap().entries.map((entry) {
+        ...setsPerExercise[id]!.asMap().entries.map((entry) {
           final index = entry.key;
           final set = entry.value;
           return Row(
@@ -340,7 +341,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                     child: Text(set["setType"] ?? index+1),
                     onSelected: (value) {
                       setState(() {
-                        setsPerExercise[exerciseUuid]![index]["setType"] = value;
+                        setsPerExercise[id]![index]["setType"] = value;
                       });
                     },
                     itemBuilder: (context) => [
@@ -361,7 +362,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                     child: TextField(
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        setsPerExercise[exerciseUuid]![index]["weight"] = value;
+                        setsPerExercise[id]![index]["weight"] = value;
                       },
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
@@ -381,7 +382,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                     child: TextField(
                       textAlign: TextAlign.center,
                       onChanged: (value) {
-                        setsPerExercise[exerciseUuid]![index]["reps"] = value;
+                        setsPerExercise[id]![index]["reps"] = value;
                       },
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
@@ -394,8 +395,8 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
               ),
               IconButton(onPressed: (){
                 setState((){
-                  if(setsPerExercise[exerciseUuid]!= null){
-                    setsPerExercise[exerciseUuid]!.removeAt(index);
+                  if(setsPerExercise[id]!= null){
+                    setsPerExercise[id]!.removeAt(index);
                   }
                 });
               }, icon: Icon(Icons.remove, color: Colors.red,))
@@ -409,10 +410,10 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                   child: TextButton(
                     onPressed: () {
                     setState(() {
-                      final nextIndex = setsPerExercise[exerciseUuid]!.length + 1;
+                      final nextIndex = setsPerExercise[id]!.length + 1;
 
-                      if (setsPerExercise[exerciseUuid] != null) {
-                        setsPerExercise[exerciseUuid]!.add({
+                      if (setsPerExercise[id] != null) {
+                        setsPerExercise[id]!.add({
                           "setType": nextIndex.toString(),
                           "weight": "",
                           "reps": "",

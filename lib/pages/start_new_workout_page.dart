@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/helper/helper_functions.dart';
 import 'package:timer_count_down/timer_controller.dart';
-import 'package:uuid/uuid.dart';
+
 import 'package:rep_track/utils/logger.dart';
 import 'package:timer_count_down/timer_count_down.dart';
 class StartNewWorkoutPage extends StatefulWidget {
@@ -19,7 +19,7 @@ class StartNewWorkoutPage extends StatefulWidget {
 }
 
 class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
-  var uuid = Uuid();
+  
   late Timer timer;
   Map<String,CountdownController> countdownControllers={};
   DateFormat format = DateFormat.ms();
@@ -51,9 +51,9 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
       fetchExerciseDetails();
     }
   }
-void showCountdownOverlay(String exerciseUuid) {
+void showCountdownOverlay(String id) {
   double deficit = 0;
-  double totalDuration = restTimers[exerciseUuid]!.inSeconds.toDouble();
+  double totalDuration = restTimers[id]!.inSeconds.toDouble();
   double remainingTime = totalDuration;
   bool paused= false;
   showDialog(
@@ -88,7 +88,7 @@ void showCountdownOverlay(String exerciseUuid) {
                       ),
                       Countdown(
                         seconds: totalDuration.toInt(),
-                        controller: countdownControllers[exerciseUuid],
+                        controller: countdownControllers[id],
                         build: (_, double time) {
                           remainingTime = time + deficit;
                           final progress = (remainingTime / totalDuration).clamp(0.0, 1.0);
@@ -117,7 +117,7 @@ void showCountdownOverlay(String exerciseUuid) {
                         },
                         onFinished: () {
                           Navigator.pop(context);
-                          countdownControllers[exerciseUuid]!.restart();
+                          countdownControllers[id]!.restart();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Rest time completed!')),
                           );
@@ -140,12 +140,12 @@ void showCountdownOverlay(String exerciseUuid) {
                         onPressed: () {
                           if(!paused){
                             setState((){paused= true;});
-                          countdownControllers[exerciseUuid]!.pause();
+                          countdownControllers[id]!.pause();
                           }
                           else{
                             setState((){paused= false;});
                             
-                            countdownControllers[exerciseUuid]!.start();
+                            countdownControllers[id]!.start();
 
                           }
                         },
@@ -154,7 +154,7 @@ void showCountdownOverlay(String exerciseUuid) {
                       SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: () {
-                          countdownControllers[exerciseUuid]!.restart();
+                          countdownControllers[id]!.restart();
                         },
                         child: Text('Restart',style: TextStyle(color: Theme.of(context).colorScheme.inverseSurface)),
                       ),
@@ -162,7 +162,7 @@ void showCountdownOverlay(String exerciseUuid) {
                       ElevatedButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          countdownControllers[exerciseUuid]!.restart();
+                          countdownControllers[id]!.restart();
                         },
                         child: Text('Skip',style: TextStyle(color: Theme.of(context).colorScheme.inverseSurface)),
                       ),
@@ -181,7 +181,7 @@ void showCountdownOverlay(String exerciseUuid) {
   
   void checkKeys() {
     noteControllers.keys
-        .where((key) => !exerciseDetails.any((exercise) => exercise['uuid'] == key))
+        .where((key) => !exerciseDetails.any((exercise) => exercise['id'] == key))
         .toList()
         .forEach((key) {
       noteControllers[key]?.dispose();
@@ -189,14 +189,14 @@ void showCountdownOverlay(String exerciseUuid) {
     });
 
     selectedTypes.keys
-        .where((key) => !exerciseDetails.any((exercise) => exercise['uuid'] == key))
+        .where((key) => !exerciseDetails.any((exercise) => exercise['id'] == key))
         .toList()
         .forEach((key) {
       selectedTypes.remove(key);
     });
   
      setsPerExercise.keys
-        .where((key) => !exerciseDetails.any((exercise) => exercise['uuid'] == key))
+        .where((key) => !exerciseDetails.any((exercise) => exercise['id'] == key))
         .toList()
         .forEach((key) {
       setsPerExercise.remove(key);
@@ -235,19 +235,19 @@ void showCountdownOverlay(String exerciseUuid) {
       if (!existing) {
         final exercise = exerciseMap[id];
         if (exercise != null) {
-          final uniqueId = uuid.v1();
+         
           exerciseDetails.add({
             'id': id, 
-            'uuid': uniqueId,
+            
             ...exercise,
           });
 
-          selectedTypes.putIfAbsent(uniqueId, () => {"setType": "1", "setNumber": 1});
-          setsPerExercise.putIfAbsent(uniqueId, () => [
+          selectedTypes.putIfAbsent(id, () => {"setType": "1", "setNumber": 1});
+          setsPerExercise.putIfAbsent(id, () => [
             {"setType": "1", "weight": "", "reps": ""}
           ]);
-          restTimers.putIfAbsent(uniqueId, () => Duration(minutes: 3, seconds: 0));
-          noteControllers.putIfAbsent(uniqueId, () => TextEditingController());
+          restTimers.putIfAbsent(id, () => Duration(minutes: 3, seconds: 0));
+          noteControllers.putIfAbsent(id, () => TextEditingController());
         }
       }
     }
@@ -285,15 +285,15 @@ void showCountdownOverlay(String exerciseUuid) {
       Navigator.pop(context);
       try{
         List<Map<String, dynamic>> exerciseData = exerciseDetails.map((exercise) {
-        final uuid = exercise['uuid']; 
+        final id = exercise['id']; 
         return {
-          "uuid": uuid,
-          "id": exercise['id'],
+         
+          "id": id,
           "imageURL": exercise['imageUrl'],
           "name": exercise['name'],
-          "restTimer": restTimers[uuid]?.inSeconds ?? 0,
-          "notes": noteControllers[uuid]?.text ?? '',
-          "sets": setsPerExercise[uuid] ?? [], 
+          "restTimer": restTimers[id]?.inSeconds ?? 0,
+          "notes": noteControllers[id]?.text ?? '',
+          "sets": setsPerExercise[id] ?? [], 
         };
       }).toList();
 
@@ -338,7 +338,7 @@ void showCountdownOverlay(String exerciseUuid) {
     );
   }
 
-  void showTimerPicker(String exerciseUuid) {
+  void showTimerPicker(String id) {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -346,11 +346,11 @@ void showCountdownOverlay(String exerciseUuid) {
           height: 250,
           child: CupertinoTimerPicker(
             mode: CupertinoTimerPickerMode.ms,
-            initialTimerDuration: restTimers[exerciseUuid] ?? Duration(minutes: 3, seconds: 0),
+            initialTimerDuration: restTimers[id] ?? Duration(minutes: 3, seconds: 0),
             onTimerDurationChanged: (Duration newDuration) {
               setState(() {
-                restTimers[exerciseUuid] = newDuration;
-                print(restTimers[exerciseUuid]);
+                restTimers[id] = newDuration;
+                print(restTimers[id]);
               });
             },
           ),
@@ -416,13 +416,13 @@ void showCountdownOverlay(String exerciseUuid) {
                 children: selectedExercises.isNotEmpty
                     ? exerciseDetails.map((exercise) {
                         
-                        final exerciseUuid = exercise['uuid'];
-                        final restTimer = restTimers[exerciseUuid] ?? Duration(minutes: 3, seconds: 0);
+                        final id = exercise['id'];
+                        final restTimer = restTimers[id] ?? Duration(minutes: 3, seconds: 0);
                         
                         final timerDisplay = "${restTimer.inMinutes}m ${restTimer.inSeconds % 60}s";
-                        restTimers.putIfAbsent(exerciseUuid,()=> Duration(minutes: 3, seconds: 0));
-                        countdownControllers.putIfAbsent(exerciseUuid,()=> CountdownController());
-                        countdownState.putIfAbsent(exerciseUuid,()=> false);
+                        restTimers.putIfAbsent(id,()=> Duration(minutes: 3, seconds: 0));
+                        countdownControllers.putIfAbsent(id,()=> CountdownController());
+                        countdownState.putIfAbsent(id,()=> false);
                         return ListTile(
                           
                           title: Row(
@@ -446,12 +446,12 @@ void showCountdownOverlay(String exerciseUuid) {
                             children: [
                               TextField(
                                 
-                                controller: noteControllers[exerciseUuid],
+                                controller: noteControllers["id"],
                                 decoration: InputDecoration(labelText: "Add routine notes here"),
                               ),
                               SizedBox(height: 5),
                               GestureDetector(
-                                onTap: () => showTimerPicker(exerciseUuid),
+                                onTap: () => showTimerPicker(id),
                                 child: Row(
                                   children: [
                                     Icon(Icons.timer),
@@ -462,7 +462,7 @@ void showCountdownOverlay(String exerciseUuid) {
                                 ),
                               ),
                               SizedBox(height: 5),
-                              set(exerciseUuid),
+                              set(id),
                               SizedBox(height: 5),
                             ],
                           ),
@@ -506,26 +506,26 @@ void showCountdownOverlay(String exerciseUuid) {
     );
   }
 
-  Column set(String exerciseUuid) {
-    if (!setsPerExercise.containsKey(exerciseUuid)) {
-      setsPerExercise[exerciseUuid] = [];
+  Column set(String id) {
+    if (!setsPerExercise.containsKey(id)) {
+      setsPerExercise["id"] = [];
     }
-    done.putIfAbsent(exerciseUuid, () => {});
-    weightControllers.putIfAbsent(exerciseUuid, () => {});
-    repControllers.putIfAbsent(exerciseUuid, () => {});
+    done.putIfAbsent(id, () => {});
+    weightControllers.putIfAbsent(id, () => {});
+    repControllers.putIfAbsent(id, () => {});
 
     return Column(
       children: [
-        ...setsPerExercise[exerciseUuid]!.asMap().entries.map((entry) {
+        ...setsPerExercise[id]!.asMap().entries.map((entry) {
           final index = entry.key;
           final set = entry.value;
-          final last = setsPerExercise[exerciseUuid]!.length -1;
-          weightControllers[exerciseUuid]!.putIfAbsent(index, ()=> TextEditingController());
-          repControllers[exerciseUuid]!.putIfAbsent(index, ()=> TextEditingController());
-          done[exerciseUuid]!.putIfAbsent(index, () => false);
+          final last = setsPerExercise[id]!.length -1;
+          weightControllers[id]!.putIfAbsent(index, ()=> TextEditingController());
+          repControllers[id]!.putIfAbsent(index, ()=> TextEditingController());
+          done[id]!.putIfAbsent(index, () => false);
           return Container(
             decoration: BoxDecoration(
-              color: done[exerciseUuid]![index] == true? Theme.of(context).colorScheme.primary: Theme.of(context).colorScheme.surface
+              color: done[id]![index] == true? Theme.of(context).colorScheme.primary: Theme.of(context).colorScheme.surface
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -537,7 +537,7 @@ void showCountdownOverlay(String exerciseUuid) {
                       child: Text(set["setType"] ?? index+1),
                       onSelected: (value) {
                         setState(() {
-                          setsPerExercise[exerciseUuid]![index]["setType"] = value;
+                          setsPerExercise[id]![index]["setType"] = value;
                         });
                       },
                       itemBuilder: (context) => [
@@ -546,13 +546,13 @@ void showCountdownOverlay(String exerciseUuid) {
                         const PopupMenuItem(value: "F", child: Text('Failure set')),
                         const PopupMenuItem(value: "D", child: Text('Drop set')),
                         if(index==last)PopupMenuItem(onTap: (){
-                          weightControllers[exerciseUuid]![index]?.dispose();
-                          weightControllers[exerciseUuid]?.remove(index);
+                          weightControllers[id]![index]?.dispose();
+                          weightControllers[id]?.remove(index);
 
-                          repControllers[exerciseUuid]![index]?.dispose();
-                          repControllers[exerciseUuid]?.remove(index);
-                          done[exerciseUuid]!.remove(index);
-                          setsPerExercise[exerciseUuid]!.removeAt(index);
+                          repControllers[id]![index]?.dispose();
+                          repControllers[id]?.remove(index);
+                          done[id]!.remove(index);
+                          setsPerExercise[id]!.removeAt(index);
                         }, child: Text('Delete Set',style: TextStyle(color: Colors.red),)),
                       ],
                     ),
@@ -566,10 +566,10 @@ void showCountdownOverlay(String exerciseUuid) {
                       height: 20,
                       child: TextField(
                         textAlign: TextAlign.center,
-                        controller: weightControllers[exerciseUuid]![index],
+                        controller: weightControllers[id]![index],
 
                         onChanged: (value) {
-                          setsPerExercise[exerciseUuid]![index]["weight"] = value;
+                          setsPerExercise["id"]![index]["weight"] = value;
                         },
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
@@ -588,9 +588,9 @@ void showCountdownOverlay(String exerciseUuid) {
                       height: 20,
                       child: TextField(
                         textAlign: TextAlign.center,
-                        controller: repControllers[exerciseUuid]![index],
+                        controller: repControllers[id]![index],
                         onChanged: (value) {
-                          setsPerExercise[exerciseUuid]![index]["reps"] = value;
+                          setsPerExercise[id]![index]["reps"] = value;
                         },
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
@@ -601,20 +601,20 @@ void showCountdownOverlay(String exerciseUuid) {
                     ),
                   ],
                 ),
-                IconButton(onPressed: (index==0&& !done[exerciseUuid]!.containsKey(index+1))||(index==0 &&done[exerciseUuid]![index + 1] == false )|| (index > 0 && (done[exerciseUuid]![index - 1] == true)&&done[exerciseUuid]![index+1]!= true) ?(){
+                IconButton(onPressed: (index==0&& !done[id]!.containsKey(index+1))||(index==0 &&done[id]![index + 1] == false )|| (index > 0 && (done[id]![index - 1] == true)&&done[id]![index+1]!= true) ?(){
                   setState((){
-                    if(done[exerciseUuid]![index]!= true){
-                      done[exerciseUuid]![index]= true;
+                    if(done[id]![index]!= true){
+                      done[id]![index]= true;
                       print(restTimers);
-                      countdownState[exerciseUuid]= true;
-                      showCountdownOverlay(exerciseUuid);
+                      countdownState[id]= true;
+                      showCountdownOverlay(id);
 
                       Future.delayed(Duration(milliseconds: 500),(){
-                          countdownControllers[exerciseUuid]!.start();
+                          countdownControllers[id]!.start();
                       });
                     }
                     else{
-                      done[exerciseUuid]![index]= false;
+                      done[id]![index]= false;
                       
 
                     }
@@ -623,7 +623,7 @@ void showCountdownOverlay(String exerciseUuid) {
                 }:null
                 
                 
-                , icon: Icon(Icons.done_rounded, color:done[exerciseUuid]![index] == false?  Theme.of(context).colorScheme.secondary:Colors.green))
+                , icon: Icon(Icons.done_rounded, color:done[id]![index] == false?  Theme.of(context).colorScheme.secondary:Colors.green))
                 ,
                 
               ],
@@ -637,10 +637,10 @@ void showCountdownOverlay(String exerciseUuid) {
                   child: TextButton(
                     onPressed: () {
                     setState(() {
-                      final nextIndex = setsPerExercise[exerciseUuid]!.length + 1;
+                      final nextIndex = setsPerExercise[id]!.length + 1;
 
-                      if (setsPerExercise[exerciseUuid] != null) {
-                        setsPerExercise[exerciseUuid]!.add({
+                      if (setsPerExercise[id] != null) {
+                        setsPerExercise[id]!.add({
                           "setType": nextIndex.toString(),
                           "weight": "",
                           "reps": "",
