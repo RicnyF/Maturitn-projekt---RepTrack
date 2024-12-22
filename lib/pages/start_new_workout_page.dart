@@ -13,14 +13,15 @@ import 'package:rep_track/utils/logger.dart';
 import 'package:timer_count_down/timer_count_down.dart';
 class StartNewWorkoutPage extends StatefulWidget {
   Map<String, Duration> routineRestTimers;
-  Map<String, Map<String, dynamic>> routineSelectedTypes;
+  Map<String, List<Map<String, dynamic>>> routineSetsPerExercise;
+
   List<String> routineSelectedExercises;
   Map<String, TextEditingController> routineNoteControllers;
   Map<String, Map<int, TextEditingController>> routineWeightControllers;
   Map<String, Map<int, TextEditingController>> routineRepControllers;
   StartNewWorkoutPage({super.key,
   this.routineRestTimers = const{},
-  this.routineSelectedTypes = const {},
+  this.routineSetsPerExercise = const {},
   this.routineSelectedExercises = const [],
   this.routineNoteControllers = const {},
   this.routineWeightControllers = const{},
@@ -41,7 +42,6 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
   Map<String, bool> countdownState = {};
   Map<String, Map<int, bool>> done = {};
   Map<String, List<Map<String, dynamic>>> setsPerExercise = {};
-  Map<String, Map<String, dynamic>> selectedTypes = {};
   final workoutNotesController = TextEditingController();
   final firestore = FirebaseFirestore.instance;
   List<String> selectedExercises = [];
@@ -69,6 +69,7 @@ void showCountdownOverlay(String id) {
   double totalDuration = restTimers[id]!.inSeconds.toDouble();
   double remainingTime = totalDuration;
   bool paused= false;
+  
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -204,13 +205,7 @@ void showCountdownOverlay(String id) {
       noteControllers.remove(key);
     });
 
-    selectedTypes.keys
-        .where((key) => !exerciseDetails.any((exercise) => exercise['id'] == key))
-        .toList()
-        .forEach((key) {
-      selectedTypes.remove(key);
-    });
-  
+ 
      setsPerExercise.keys
         .where((key) => !exerciseDetails.any((exercise) => exercise['id'] == key))
         .toList()
@@ -223,11 +218,11 @@ void showCountdownOverlay(String id) {
     setState(() {
       selectedExercises.clear();
       exerciseDetails.clear();
-      selectedTypes.clear();
       restTimers.clear();
       weightControllers.clear();
       repControllers.clear();
       noteControllers.clear();
+      setsPerExercise.clear();
     });
   }
 
@@ -251,7 +246,6 @@ void showCountdownOverlay(String id) {
           .map((id) {
             
             final exercise = exerciseMap[id];
-            selectedTypes.putIfAbsent(id, () => {"setType": "1", "setNumber": 1});
             if (!setsPerExercise.containsKey(id)) {
               setsPerExercise[id] = [
                 {"setType": "1", "weight": "", "reps": ""}
@@ -274,20 +268,70 @@ void showCountdownOverlay(String id) {
   }
 
   void saveWorkout()async{
+    
     final workoutId = FirebaseFirestore.instance.collection('Routines').doc().id;
     AppLogger.logInfo("Attempting to save a workout...");
 showDialog(context: context, builder: (context)=> const Center(
       child: CircularProgressIndicator(),
     )
     );
+    if(selectedExercises.isEmpty){
+      Navigator.pop(context);
+      displayMessageToUser("At least one exercise must be selected", context);
+      AppLogger.logError("No exercise selected.", );
+      return;
+    }
     if(done.values.any((exercise)=> exercise.containsValue(false))){
       Navigator.pop(context);
       displayMessageToUser("All exercises must be done", context);
       AppLogger.logError("Some exercises are not done.", );
+      return;
     }
     
+    else{
+      Navigator.pop(context);
+      try{
+        List<Map<String, dynamic>> exerciseData = exerciseDetails.map((exercise) {
+        final id = exercise['id']; 
+        return {
+         
+          "id": id,
+          "imageURL": exercise['imageUrl'],
+          "name": exercise['name'],
+          "restTimer": restTimers[id]?.inSeconds ?? 0,
+          "notes": noteControllers[id]?.text ?? '',
+          "sets": setsPerExercise[id] ?? [], 
+        };
+      }).toList();
+      await FirebaseFirestore.instance
+    .collection('Users') 
+    .doc(currentUser?.uid)
+    .collection('Workouts') 
+    .doc(workoutId)
+    .set({
+          'workoutId':workoutId,
+          'exercises': exerciseData,
+          "workoutDuration " : elapsedTime,
+          'createdAt': dateFormat.format(DateTime.now()),
+          "updatedAt": dateFormat.format(DateTime.now()),
+
+        });
+      if(mounted){
+      Navigator.pop(context);
+      displayMessageToUser("Workout saved successfully!", context);
+      }
+      AppLogger.logInfo("Workout saved successfully.");
+
+      resetRoutine();
+      }
+      catch(e,stackTrace){
+      AppLogger.logError("Failed to save routine.", e, stackTrace);
+      }
+      
+    }
   }
   void saveRoutine()async {
+    
     final routineId = FirebaseFirestore.instance.collection('Routines').doc().id;
     AppLogger.logInfo("Attempting to save a routine...");
 
@@ -354,7 +398,6 @@ showDialog(context: context, builder: (context)=> const Center(
       selectedExercises.remove(exercise['id']);
       restTimers.remove(exercise['id']);
       done.remove(exercise["id"]);
-      selectedTypes.remove(exercise["id"]);
       weightControllers.remove(exercise["id"]);
       repControllers.remove(exercise["id"]);
       noteControllers.remove(exercise["id"]);
@@ -387,9 +430,8 @@ showDialog(context: context, builder: (context)=> const Center(
 void initState() {
   super.initState();
 
-  
+  setsPerExercise= widget.routineSetsPerExercise.isNotEmpty ? widget.routineSetsPerExercise: setsPerExercise;
   restTimers = widget.routineRestTimers.isNotEmpty ? widget.routineRestTimers : restTimers;
-  selectedTypes = widget.routineSelectedTypes.isNotEmpty ? widget.routineSelectedTypes : selectedTypes;
   selectedExercises = widget.routineSelectedExercises.isNotEmpty ? widget.routineSelectedExercises : selectedExercises;
   noteControllers = widget.routineNoteControllers.isNotEmpty ? widget.routineNoteControllers : noteControllers;
   weightControllers = widget.routineWeightControllers.isNotEmpty ? widget.routineWeightControllers : weightControllers;
@@ -409,7 +451,6 @@ void initState() {
   void dispose() {
     selectedExercises.clear();
     exerciseDetails.clear();
-    selectedTypes.clear();
     restTimers.clear();
     weightControllers.clear();
     repControllers.clear();
@@ -485,7 +526,7 @@ void initState() {
                               TextField(
                                 
                                 controller: noteControllers["id"],
-                                decoration: InputDecoration(labelText: "Add routine notes here"),
+                                decoration: InputDecoration(labelText: "Add exercise notes here"),
                               ),
                               SizedBox(height: 5),
                               GestureDetector(
@@ -553,6 +594,8 @@ void initState() {
     repControllers.putIfAbsent(id, () => {});
 
     return Column(
+      
+      
       children: [
         ...setsPerExercise[id]!.asMap().entries.map((entry) {
           final index = entry.key;
@@ -644,7 +687,16 @@ void initState() {
                 ),
                 IconButton(onPressed: (index==0&& !done[id]!.containsKey(index+1))||(index==0 &&done[id]![index + 1] == false )|| (index > 0 && (done[id]![index - 1] == true)&&done[id]![index+1]!= true) ?(){
                   setState((){
+                    
                     if(done[id]![index]!= true){
+                      if(weightControllers[id]![index]!.text ==""||repControllers[id]![index]!.text ==""){
+                        displayMessageToUser("Please set all weights and reps to proceed.", context);
+                        
+                      }
+                      else if(restTimers[id]!.inSeconds== 0){
+                        displayMessageToUser("Please set a rest timer greater than 0 seconds to proceed.", context);
+                      }
+                      else{
                       done[id]![index]= true;
                       print(restTimers);
                       countdownState[id]= true;
@@ -653,6 +705,7 @@ void initState() {
                       Future.delayed(Duration(milliseconds: 500),(){
                           countdownControllers[id]!.start();
                       });
+                      }
                     }
                     else{
                       done[id]![index]= false;
@@ -681,24 +734,21 @@ void initState() {
                       final nextIndex = setsPerExercise[id]!.length + 1;
 
                       if (setsPerExercise[id] != null) {
-                        if(weightControllers[id]![nextIndex-2]!.text != ""){
+                        
                           
                         
                         setsPerExercise[id]!.add({
                           "setType": nextIndex.toString(),
                           "weight": weightControllers[id]![nextIndex-2]!.text,
-                          "reps": "",
+                          "reps": repControllers[id]![nextIndex-2]!.text,
                         });
-                        }else{
-                        setsPerExercise[id]!.add({
-                          "setType": nextIndex.toString(),
-                          "weight": "",
-                          "reps": "",
-                        });
-                        }
-                      }
-                      weightControllers[id]![nextIndex-1] = TextEditingController();
+                        
+                       weightControllers[id]![nextIndex-1] = TextEditingController();
                       weightControllers[id]![nextIndex-1]!.text =  weightControllers[id]![nextIndex-2]!.text;
+                      repControllers[id]![nextIndex-1] = TextEditingController();
+                      repControllers[id]![nextIndex-1]!.text =  repControllers[id]![nextIndex-2]!.text;
+                      }
+                     
                     });
 
                     },

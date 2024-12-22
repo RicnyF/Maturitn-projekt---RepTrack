@@ -284,10 +284,18 @@ class _RoutinesPageState extends State<RoutinesPage> {
                                               for (var exercise in routineData['exercises'])
                                                 exercise['id']: Duration(seconds: exercise['restTimer']),
                                             },
-                                            routineSelectedTypes: {
-                                              for (var exercise in routineData['exercises'])
-                                                exercise['id']: {"setType": "1", "setNumber": 1},
-                                            },
+                                            routineSetsPerExercise: {
+                                            for (var exercise in routineData['exercises'])
+                                              exercise['id']: [
+                                                for (var set in exercise['sets'])
+                                                  {
+                                                    "setType": set['setType'] ?? "1",
+                                                    "weight": set['weight'] ?? "",
+                                                    "reps": set['reps'] ?? "",
+                                                  },
+                                              ],
+                                          },
+
                                             routineSelectedExercises: routineData['exercises']
                                                 .map<String>((exercise) => exercise['id'] as String)
                                                 .toList(),

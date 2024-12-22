@@ -17,12 +17,13 @@ class AddRoutinesPage extends StatefulWidget {
 class _AddRoutinesPageState extends State<AddRoutinesPage> {
 
   Map<String, List<Map<String, dynamic>>> setsPerExercise = {};
-  Map<String, Map<String, dynamic>> selectedTypes = {};
   final nameController = TextEditingController();
   final firestore = FirebaseFirestore.instance;
   List<String> selectedExercises = [];
   List<Map<String, dynamic>> exerciseDetails = [];
   Map<String, Duration> restTimers = {};
+  Map<String, Map<int, TextEditingController>> weightControllers = {};
+  Map<String, Map<int, TextEditingController>> repControllers = {};
   Map<String, TextEditingController> noteControllers = {};
   final User? currentUser = FirebaseAuth.instance.currentUser;
   DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
@@ -48,12 +49,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
       noteControllers.remove(key);
     });
 
-    selectedTypes.keys
-        .where((key) => !exerciseDetails.any((exercise) => exercise['id'] == key))
-        .toList()
-        .forEach((key) {
-      selectedTypes.remove(key);
-    });
+    
   
      setsPerExercise.keys
         .where((key) => !exerciseDetails.any((exercise) => exercise['id'] == key))
@@ -67,12 +63,14 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
     setState(() {
       selectedExercises.clear();
       exerciseDetails.clear();
-      selectedTypes.clear();
       restTimers.clear();
+      setsPerExercise.clear();
       for (var controller in noteControllers.values) {
         controller.dispose();
       }
       noteControllers.clear();
+      weightControllers.clear();
+      repControllers.clear();
     });
   }
 
@@ -96,7 +94,6 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
           .map((id) {
             
             final exercise = exerciseMap[id];
-            selectedTypes.putIfAbsent(id, () => {"setType": "1", "setNumber": 1});
             if (!setsPerExercise.containsKey(id)) {
               setsPerExercise[id] = [
                 {"setType": "1", "weight": "", "reps": ""}
@@ -126,8 +123,13 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
       child: CircularProgressIndicator(),
     )
     );
-    
-    if(nameController.text.isEmpty){
+    if((weightControllers.values.any((exercise)=> exercise.values.any((exercise)=> exercise.text=="")))||(repControllers.values.any((exercise)=> exercise.values.any((exercise)=> exercise.text=="")))){
+      Navigator.pop(context);
+      displayMessageToUser("All weights and reps must be set", context);
+      AppLogger.logError("Some weights or reps are not set", );
+
+    }
+    else if(nameController.text.isEmpty){
       Navigator.pop(context);
       displayMessageToUser("Routine name can´t be empty", context);
       AppLogger.logError("Routine name is empty.", );
@@ -184,8 +186,10 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
     setState(() {
       selectedExercises.remove(exercise['id']);
       restTimers.remove(exercise['id']);
-      selectedTypes.remove(exercise["id"]);
+      setsPerExercise.remove(exercise["id"]);
       noteControllers.remove(exercise["id"]);
+      weightControllers.clear();
+      repControllers.clear();
     });
 
     fetchExerciseDetails();
@@ -199,7 +203,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
           height: 250,
           child: CupertinoTimerPicker(
             mode: CupertinoTimerPickerMode.ms,
-            initialTimerDuration: restTimers[id] ?? Duration(minutes: 0, seconds: 0),
+            initialTimerDuration: restTimers[id] ?? Duration(minutes: 3, seconds: 0),
             onTimerDurationChanged: (Duration newDuration) {
               setState(() {
                 restTimers[id] = newDuration;
@@ -241,7 +245,8 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                     ? exerciseDetails.map((exercise) {
                         
                         final id = exercise['id'];
-                        final timer = restTimers[id] ?? Duration(minutes: 0, seconds: 0);
+                        restTimers[id]= Duration(minutes: 3, seconds: 0);
+                        final timer = Duration(minutes: 3, seconds: 0);
                         final timerDisplay = "${timer.inMinutes}m ${timer.inSeconds % 60}s";
 
                         return ListTile(
@@ -327,12 +332,15 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
     if (!setsPerExercise.containsKey(id)) {
       setsPerExercise[id] = [];
     }
-
+weightControllers.putIfAbsent(id, () => {});
+    repControllers.putIfAbsent(id, () => {});
     return Column(
       children: [
         ...setsPerExercise[id]!.asMap().entries.map((entry) {
           final index = entry.key;
           final set = entry.value;
+          weightControllers[id]!.putIfAbsent(index, ()=> TextEditingController());
+          repControllers[id]!.putIfAbsent(index, ()=> TextEditingController());
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -363,6 +371,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                     height: 20,
                     child: TextField(
                       textAlign: TextAlign.center,
+                      controller: weightControllers[id]![index],
                       onChanged: (value) {
                         setsPerExercise[id]![index]["weight"] = value;
                       },
@@ -383,6 +392,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                     height: 20,
                     child: TextField(
                       textAlign: TextAlign.center,
+                      controller: repControllers[id]![index],
                       onChanged: (value) {
                         setsPerExercise[id]![index]["reps"] = value;
                       },
@@ -399,6 +409,10 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                 setState((){
                   if(setsPerExercise[id]!= null){
                     setsPerExercise[id]!.removeAt(index);
+                    weightControllers[id]![index]?.dispose();
+                    weightControllers[id]?.remove(index);
+                    repControllers[id]![index]?.dispose();
+                    repControllers[id]?.remove(index);
                   }
                 });
               }, icon: Icon(Icons.remove, color: Colors.red,))
@@ -411,17 +425,28 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
                   width: 350,
                   child: TextButton(
                     onPressed: () {
+                    
                     setState(() {
                       final nextIndex = setsPerExercise[id]!.length + 1;
 
                       if (setsPerExercise[id] != null) {
+                        
+                          
+                        
                         setsPerExercise[id]!.add({
                           "setType": nextIndex.toString(),
-                          "weight": "",
-                          "reps": "",
+                          "weight": weightControllers[id]![nextIndex-2]!.text,
+                          "reps": repControllers[id]![nextIndex-2]!.text,
                         });
+                        
+                       weightControllers[id]![nextIndex-1] = TextEditingController();
+                      weightControllers[id]![nextIndex-1]!.text =  weightControllers[id]![nextIndex-2]!.text;
+                      repControllers[id]![nextIndex-1] = TextEditingController();
+                      repControllers[id]![nextIndex-1]!.text =  repControllers[id]![nextIndex-2]!.text;
                       }
+                     
                     });
+
                     },
                     style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Theme.of(context).colorScheme.secondary)),
                     child: Padding(
