@@ -295,7 +295,7 @@ class _RoutinesPageState extends State<RoutinesPage> {
                                                   },
                                               ],
                                           },
-
+                                            routineName: routineData["name"],
                                             routineSelectedExercises: routineData['exercises']
                                                 .map<String>((exercise) => exercise['id'] as String)
                                                 .toList(),

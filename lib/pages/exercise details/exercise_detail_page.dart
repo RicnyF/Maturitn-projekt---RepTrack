@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/pages/edit_exercises_page.dart';
 import 'package:rep_track/pages/exercise%20details/exercise_detail_about_page.dart';
@@ -16,12 +19,21 @@ class ExerciseDetailPage extends StatefulWidget {
   @override
   State<ExerciseDetailPage> createState() => _ExerciseDetailPageState();
 }
+final User? currentUser = FirebaseAuth.instance.currentUser;
+final ref =FirebaseFirestore.instance.collection('Users');
 
 class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
   late final List <Widget> _pages;
+  
+    
+
+  
+
+
   @override
   void initState(){
     super.initState();
+    
 _pages = <Widget>[
    Tab(child:ExerciseDetailAboutPage(
         exerciseId: widget.exerciseId,

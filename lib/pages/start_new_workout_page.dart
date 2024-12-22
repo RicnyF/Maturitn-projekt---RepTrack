@@ -19,6 +19,7 @@ class StartNewWorkoutPage extends StatefulWidget {
   Map<String, TextEditingController> routineNoteControllers;
   Map<String, Map<int, TextEditingController>> routineWeightControllers;
   Map<String, Map<int, TextEditingController>> routineRepControllers;
+  String routineName;
   StartNewWorkoutPage({super.key,
   this.routineRestTimers = const{},
   this.routineSetsPerExercise = const {},
@@ -26,6 +27,7 @@ class StartNewWorkoutPage extends StatefulWidget {
   this.routineNoteControllers = const {},
   this.routineWeightControllers = const{},
   this.routineRepControllers = const {},
+  this.routineName = "",
   });
 
   @override
@@ -42,7 +44,7 @@ class _StartNewWorkoutPageState extends State<StartNewWorkoutPage> {
   Map<String, bool> countdownState = {};
   Map<String, Map<int, bool>> done = {};
   Map<String, List<Map<String, dynamic>>> setsPerExercise = {};
-  final workoutNotesController = TextEditingController();
+  final workoutNameController = TextEditingController();
   final firestore = FirebaseFirestore.instance;
   List<String> selectedExercises = [];
   List<Map<String, dynamic>> exerciseDetails = [];
@@ -309,6 +311,7 @@ showDialog(context: context, builder: (context)=> const Center(
     .collection('Workouts') 
     .doc(workoutId)
     .set({
+          "workoutName":workoutNameController.text,
           'workoutId':workoutId,
           'exercises': exerciseData,
           "workoutDuration " : elapsedTime,
@@ -330,69 +333,7 @@ showDialog(context: context, builder: (context)=> const Center(
       
     }
   }
-  void saveRoutine()async {
-    
-    final routineId = FirebaseFirestore.instance.collection('Routines').doc().id;
-    AppLogger.logInfo("Attempting to save a routine...");
-
-    showDialog(context: context, builder: (context)=> const Center(
-      child: CircularProgressIndicator(),
-    )
-    );
-    
-    if(workoutNotesController.text.isEmpty){
-      Navigator.pop(context);
-      displayMessageToUser("Routine name can´t be empty", context);
-      AppLogger.logError("Routine name is empty.", );
-
-    }
-    else if(selectedExercises.isEmpty){
-      Navigator.pop(context);
-      displayMessageToUser("No exercise is selected", context);
-      AppLogger.logError("No exercises selected.", );
-    }
-    else{
-      
-      
-      Navigator.pop(context);
-      try{
-        List<Map<String, dynamic>> exerciseData = exerciseDetails.map((exercise) {
-        final id = exercise['id']; 
-        return {
-         
-          "id": id,
-          "imageURL": exercise['imageUrl'],
-          "name": exercise['name'],
-          "restTimer": restTimers[id]?.inSeconds ?? 0,
-          "notes": noteControllers[id]?.text ?? '',
-          "sets": setsPerExercise[id] ?? [], 
-        };
-      }).toList();
-
-        await FirebaseFirestore.instance.collection('Routines').doc(routineId).set({
-          'routineId':routineId,
-          'createdBy': currentUser?.uid,
-          'name': workoutNotesController.text,
-          'exercises': exerciseData,
-          'createdAt': dateFormat.format(DateTime.now()),
-        "updatedAt": dateFormat.format(DateTime.now()),
-          'type': currentUser?.email =="admin@admin.cz" ?"predefined":"custom",
-        });
-      if(mounted){
-      Navigator.pop(context);
-      displayMessageToUser("Routine saved successfully!", context);
-      }
-      AppLogger.logInfo("Routine saved successfully.");
-
-      resetRoutine();
-      }
-      catch(e, stackTrace){
-      AppLogger.logError("Failed to save routine.", e, stackTrace);
-      
-    }
-    
-  }
-  }
+ 
   Future<void> removeExercise(exercise) async {
     setState(() {
       selectedExercises.remove(exercise['id']);
@@ -429,7 +370,7 @@ showDialog(context: context, builder: (context)=> const Center(
  @override
 void initState() {
   super.initState();
-
+  workoutNameController.text = widget.routineName;
   setsPerExercise= widget.routineSetsPerExercise.isNotEmpty ? widget.routineSetsPerExercise: setsPerExercise;
   restTimers = widget.routineRestTimers.isNotEmpty ? widget.routineRestTimers : restTimers;
   selectedExercises = widget.routineSelectedExercises.isNotEmpty ? widget.routineSelectedExercises : selectedExercises;
@@ -481,12 +422,12 @@ void initState() {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Workout notes", style: TextStyle(fontSize: 25)),
+              Text("Workout name", style: TextStyle(fontSize: 25)),
               SizedBox(height: 10),
               MyTextfield(
-                hintText: "notes",
+                hintText: "name",
                 obscureText: false,
-                controller: workoutNotesController,
+                controller: workoutNameController,
               ),
               SizedBox(height: 20),
               Text("Workout Content", style: TextStyle(fontSize: 25)),

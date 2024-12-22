@@ -157,7 +157,7 @@ void edit() async{
         'createdBy': user?.uid,
         'imageUrl': imageUrl,
         'equipment':equipmentController.text,
-        'createdAt': dateFormat.format(DateTime.now()),
+        
         "updatedAt": dateFormat.format(DateTime.now()),
       });
      if(mounted){

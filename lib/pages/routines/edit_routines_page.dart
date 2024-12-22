@@ -235,7 +235,6 @@ checkKeys();
           'createdBy': currentUser?.uid,
           'name': nameController.text,
           'exercises': exerciseData,
-          'createdAt': dateFormat.format(DateTime.now()),
         "updatedAt": dateFormat.format(DateTime.now()),
           'type': currentUser?.email =="admin@admin.cz" ?"predefined":"custom",
         });
