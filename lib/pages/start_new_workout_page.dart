@@ -314,7 +314,7 @@ showDialog(context: context, builder: (context)=> const Center(
           "workoutName":workoutNameController.text,
           'workoutId':workoutId,
           'exercises': exerciseData,
-          "workoutDuration " : elapsedTime,
+          "workoutDuration" : elapsedTime,
           'createdAt': dateFormat.format(DateTime.now()),
           "updatedAt": dateFormat.format(DateTime.now()),
 

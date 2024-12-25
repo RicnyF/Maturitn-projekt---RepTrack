@@ -75,7 +75,6 @@ final storageRef = FirebaseStorage.instance;
 
 void delete() async{
   AppLogger.logInfo("Attempting to delete a exercise...");
-
   final result = await showDialog<bool>(context: context, builder: (context) => AlertDialog(
     title: const Text("Are you sure ?"),
     content: Text ("This action will permanently delete exercise ${widget.exerciseData['name']}!"),

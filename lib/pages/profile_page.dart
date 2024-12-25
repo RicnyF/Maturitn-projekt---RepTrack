@@ -4,12 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:rep_track/auth/auth.dart';
 import 'package:rep_track/components/my_boldtext.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rep_track/helper/helper_functions.dart';
 import 'package:logger/logger.dart';
+import 'package:rep_track/pages/workout_details_page.dart';
 import 'package:rep_track/utils/logger.dart';
+import 'package:table_calendar/table_calendar.dart';
 class ProfilePage extends StatefulWidget {
   
   const ProfilePage({super.key});
@@ -18,18 +21,63 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
+
+
+
 class _ProfilePageState extends State<ProfilePage> {
   final logger = Logger();
-  bool isLoading = false; 
+  bool isLoading = false;
+  ValueNotifier<DateTime> _selectedDayNotifier = ValueNotifier(DateTime.now());
+ 
+  var _selectedDay = DateTime.now();
+  var _focusedDay = DateTime.now();
+  final DateFormat _calendarFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
   final storageRef = FirebaseStorage.instance;
+  Map<DateTime, List<Map<String, dynamic>>> events = {};
   // current logged in user
   final User ? currentUser = FirebaseAuth.instance.currentUser;
+ void _showWorkoutChoiceDialog(BuildContext context, List<Map<String, dynamic>> workouts) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      print(workouts.length);
+      return AlertDialog(
+        title: Text("Select a Workout"),
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.8,
+          height: (17+47.0*workouts.length), // Adjust height as needed
+          child: ListView.builder(
+            itemCount: workouts.length,
+            itemBuilder: (context, index) {
+              final workout = workouts[index];
+              return ListTile(
+                title: Text("${workout["workoutName"]} - ${workout["createdAt"]}"),
+                onTap: () {
+                  Navigator.pop(context); // Close the dialog
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => WorkoutDetailsPage(
+                        workoutId: workout["workoutId"],
+                        workoutData: workout,
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      );
+    },
+  );
+}
 
   Future<DocumentSnapshot<Map<String,dynamic>>> getUserDetails() async{
     return await FirebaseFirestore.instance.collection("Users").doc(currentUser!.uid).get();
   }
 
-  Future<void> editPfp(Map<String, dynamic>? user)async{
+  Future<void> editPfp(user)async{
     AppLogger.logInfo("Attempting to edit profile picture...");
 
    final ImagePicker picker = ImagePicker();
@@ -54,6 +102,39 @@ class _ProfilePageState extends State<ProfilePage> {
     getImageUrl();
    
   }
+Future<void> getUserWorkouts() async {
+  final workoutsSnapshot = await FirebaseFirestore.instance
+      .collection("Users")
+      .doc(currentUser!.uid)
+      .collection("Workouts")
+      .orderBy("createdAt", descending: true)
+      .get();
+
+  Map<DateTime, List<Map<String, dynamic>>> tempEvents = {};
+
+  for (var doc in workoutsSnapshot.docs) {
+    final data = doc.data();
+    DateTime date = DateTime.parse(data["createdAt"]);
+    DateTime onlyDate = DateTime(date.year, date.month, date.day);
+
+    if (!tempEvents.containsKey(onlyDate)) {
+      tempEvents[onlyDate] = [];
+    }
+    print(data["workoutDuration"]);
+    tempEvents[onlyDate]?.add({
+      "workoutId": data["workoutId"],
+      "workoutName": data["workoutName"],
+      "createdAt": data["createdAt"],
+      "workoutDuration": data["workoutDuration"],
+      "exercises": data["exercises"],
+    });
+  }
+
+  setState(() {
+    events = tempEvents;
+  });
+}
+
 
   
   late String imageUrl;
@@ -64,6 +145,7 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     imageUrl='';
     getImageUrl();
+    getUserWorkouts();
   }
 
  Future<void> getImageUrl()async{
@@ -127,9 +209,11 @@ class _ProfilePageState extends State<ProfilePage> {
         ),  
         backgroundColor: Theme.of(context).colorScheme.surface,
         body: 
-        
-        FutureBuilder<DocumentSnapshot<Map<String,dynamic>>>(
-          future: getUserDetails(), 
+      FutureBuilder(
+          future: Future.wait([
+          getUserDetails(),
+        ]),
+ 
         builder: (context,snapshot){
           
           //loading
@@ -144,8 +228,9 @@ class _ProfilePageState extends State<ProfilePage> {
           //data received
           else if (snapshot.hasData){
            
-            Map<String, dynamic>? user = snapshot.data!.data();
-           
+            final user = snapshot.data![0] as DocumentSnapshot<Map<String, dynamic>>;
+
+            
             return Center(
               child: Column(children: [
                 
@@ -179,7 +264,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 
                 Text(capitalizeFirstLetter(user!['username']),style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25),),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -214,7 +299,128 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   ],
                 ),
-              ],
+                SizedBox(
+                  width: 350,
+                  height: 400,
+                  child: /*TableCalendar(
+                    focusedDay: _selectedDay,
+                     firstDay: DateTime.utc(2010, 10, 16),
+                     lastDay: DateTime.now(),
+                     selectedDayPredicate: (day) {
+                    return isSameDay(_selectedDay, day);
+                  },
+                  eventLoader:(day){
+                    return events[DateTime(day.year,day.month,day.day)]?? [];
+                  },
+                  calendarStyle: CalendarStyle(weekendTextStyle: TextStyle(color: Colors.white),disabledTextStyle: TextStyle(color: Colors.grey)),
+                 onDaySelected: (selectedDay, focusedDay) {
+
+    setState(() {
+      _selectedDay = selectedDay;
+      _focusedDay = focusedDay;
+    });
+
+    /*final onlyDate = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
+
+    if (events.containsKey(onlyDate) && events[onlyDate]!.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WorkoutDetailsPage(
+            workoutId: events[onlyDate]![0]["workoutId"],
+            workoutData: events[onlyDate]![0],
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("No workouts found for the selected day.")),
+      );
+    }
+  */
+},
+
+
+                  headerStyle: HeaderStyle(
+          formatButtonVisible: false,
+          titleCentered: true,
+          titleTextFormatter: (date, locale) {
+            
+            return DateFormat('yyyy MMMM').format(date);
+          },
+          titleTextStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        calendarFormat: CalendarFormat.month,
+                 
+                  ),*/
+                   ValueListenableBuilder<DateTime>(
+    valueListenable: _selectedDayNotifier,
+    builder: (context, selectedDay, child) {
+      return TableCalendar(
+  focusedDay: selectedDay,
+  firstDay: DateTime(2000, 0, 0),
+  lastDay: DateTime.now(),
+  
+
+  selectedDayPredicate: (day) => isSameDay(day, selectedDay),
+  eventLoader:(day){
+                    return events[DateTime(day.year,day.month,day.day)]?? [];
+                  },
+ onDaySelected: (selectedDay, focusedDay) {
+             
+                _selectedDayNotifier.value = selectedDay;
+              
+
+              final onlyDate = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
+              final workouts = events[onlyDate] ?? [];
+
+             
+              if (workouts.length == 1 ) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WorkoutDetailsPage(
+                      workoutId: workouts[0]["workoutId"],
+                      workoutData: workouts[0],
+                    ),
+                  ),
+                );
+              } else if(workouts.isNotEmpty){
+                _showWorkoutChoiceDialog(context, workouts);
+              }
+              _selectedDayNotifier.value = DateTime.now();
+            },
+  calendarStyle: CalendarStyle(
+    
+    markerDecoration: BoxDecoration(color: Color.fromARGB(255, 141, 141, 141), shape: BoxShape.circle),weekendTextStyle: TextStyle(color: Colors.white),disabledTextStyle: TextStyle(color: Colors.grey)),
+  headerStyle: HeaderStyle(
+          formatButtonVisible: false,
+          titleCentered: true,
+          
+          titleTextFormatter: (date, locale) {
+            
+            return DateFormat('yyyy MMMM').format(date);
+          },
+          titleTextStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+)
+
+;
+             })   ),
+                /*ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: workouts.length,
+                    itemBuilder: (context, index) {
+                      final workout = workouts[index].data();
+                      return ListTile(
+                        title: Text(workout["workoutName"] ?? "Unnamed Workout"),
+                        subtitle: Text("Date: ${workout['createdAt'] ?? "Unknown"}"),
+                        onTap: () {
+                          // Navigate to workout details if needed
+                        },
+                      );
+          })*/],
               ),
             );
             }else {
@@ -223,6 +429,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         }
         )
+        
         );
       
   }
