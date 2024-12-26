@@ -232,7 +232,6 @@ void showCountdownOverlay(String id) {
     
     if (selectedExercises.isEmpty) {
       resetRoutine();
-      print("Reset");
       return;
     }
 
@@ -359,7 +358,6 @@ showDialog(context: context, builder: (context)=> const Center(
             onTimerDurationChanged: (Duration newDuration) {
               setState(() {
                 restTimers[id] = newDuration;
-                print(restTimers[id]);
               });
             },
           ),
@@ -592,8 +590,6 @@ void initState() {
 
                         onChanged: (value) {
                           setsPerExercise[id]![index]["weight"] = value;
-                          print(index);
-                          print(setsPerExercise[id]!.length-1);
                           
                         },
                         keyboardType: TextInputType.number,
@@ -639,7 +635,6 @@ void initState() {
                       }
                       else{
                       done[id]![index]= true;
-                      print(restTimers);
                       countdownState[id]= true;
                       showCountdownOverlay(id);
 

@@ -78,7 +78,6 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
     
     if (selectedExercises.isEmpty) {
       resetRoutine();
-      print("Reset");
       return;
     }
 

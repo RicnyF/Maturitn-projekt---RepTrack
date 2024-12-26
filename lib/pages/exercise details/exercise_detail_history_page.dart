@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/pages/profile_page.dart';
+import 'package:rep_track/utils/logger.dart';
 
 class ExerciseDetailHistoryPage extends StatefulWidget {
   final String exerciseId;
@@ -23,15 +24,17 @@ class _ExerciseDetailHistoryPageState extends State<ExerciseDetailHistoryPage> {
 
   Future<Map<String, Map<String, dynamic>>> getExercisesForUser(
       String exerciseId) async {
+      AppLogger.logInfo("Attempting to get exercise history...");
+
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
 
       if (currentUser == null) {
-        print("No user is logged in.");
+        AppLogger.logError("No user logged in.", );
+
         return {};
       }
 
-      print(currentUser.uid);
 
       final workoutsRef = FirebaseFirestore.instance
           .collection('Users')
@@ -54,8 +57,10 @@ class _ExerciseDetailHistoryPageState extends State<ExerciseDetailHistoryPage> {
           }
         }
       }
-    } catch (e) {
-      print("Error fetching exercises for user: $e");
+      AppLogger.logInfo("Exercise history fetches successfully...");
+
+    } catch (e, stackTrace) {
+      AppLogger.logError("Failed to get fetch exercises.", e, stackTrace);
     }
 
     return fetchedExercises;

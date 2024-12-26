@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/pages/profile_page.dart';
+import 'package:rep_track/utils/logger.dart';
 
 class ExerciseDetailBestPage extends StatefulWidget {
   final String exerciseId;
@@ -14,15 +15,16 @@ class ExerciseDetailBestPage extends StatefulWidget {
   State<ExerciseDetailBestPage> createState() => _ExerciseDetailBestPageState();
 }
  Future<Map<String, dynamic>?> getHighestWeightRecord(String exerciseId) async {
+  AppLogger.logInfo("Attempting to get personal best...");
+
   try {
     final currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser == null) {
-      print("No user is logged in.");
+      AppLogger.logError("No user logged in.", );
       return null;
     }
 
-    print(currentUser.uid);
 
     final workoutsRef = FirebaseFirestore.instance
         .collection('Users')
@@ -61,10 +63,11 @@ class ExerciseDetailBestPage extends StatefulWidget {
         }
       }
     }
+    AppLogger.logInfo("Personal best taken successfully.");
 
     return highestWeightRecord;
-  } catch (e) {
-    print("Error fetching highest weight record: $e");
+  } catch (e, stackTrace) {
+      AppLogger.logError("Failed to get personal best.", e, stackTrace);
     return null;
   }
 }
@@ -90,7 +93,6 @@ class _ExerciseDetailBestPageState extends State<ExerciseDetailBestPage> {
         }
         if (snapshot.hasData && snapshot.data!.isNotEmpty) {
           final workout = snapshot.data!;
-          print(workout);
           return Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(

@@ -50,7 +50,6 @@ void initState() {
      
       
     selectedExercises.add({"id": exerciseId});
-      print(selectedExercises);
       setsPerExercise[widget.routineId] = (exercise["sets"] as List<dynamic>?)
               ?.map((set) => Map<String, dynamic>.from(set))
               .toList() ??
@@ -94,7 +93,6 @@ void initState() {
   }});
   
     fetchExerciseDetails();
-    print(selectedExercises);
   }
 }
 
@@ -139,7 +137,6 @@ void initState() {
     
     if (selectedExercises.isEmpty) {
       resetRoutine();
-      print("Reset");
       return;
     }
 

@@ -5,12 +5,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:rep_track/auth/auth.dart';
 import 'package:rep_track/components/my_boldtext.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rep_track/helper/helper_functions.dart';
 import 'package:logger/logger.dart';
 import 'package:rep_track/pages/workout_details_page.dart';
+import 'package:rep_track/theme/theme_provider.dart';
 import 'package:rep_track/utils/logger.dart';
 import 'package:table_calendar/table_calendar.dart';
 class ProfilePage extends StatefulWidget {
@@ -40,7 +42,6 @@ class _ProfilePageState extends State<ProfilePage> {
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      print(workouts.length);
       return AlertDialog(
         title: Text("Select a Workout"),
         content: SizedBox(
@@ -120,7 +121,6 @@ Future<void> getUserWorkouts() async {
     if (!tempEvents.containsKey(onlyDate)) {
       tempEvents[onlyDate] = [];
     }
-    print(data["workoutDuration"]);
     tempEvents[onlyDate]?.add({
       "workoutId": data["workoutId"],
       "workoutName": data["workoutName"],
@@ -196,9 +196,29 @@ Future<void> getUserWorkouts() async {
           child: ListView(
             children: [
               ListTile(
-                title: const Text("Settings"),
+                title: const Text("Edit profile"),
                 onTap: (){},
               ),
+               ListTile(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Change Theme"), Icon (Provider.of<ThemeProvider>(context).isDarkTheme == true ? Icons.dark_mode:Icons.light_mode)
+                ],
+              ),
+              onTap: (){
+Provider.of<ThemeProvider>(context, listen: false)
+                      .toggleTheme();
+              },
+              
+              /*Switch(
+                value: Provider.of<ThemeProvider>(context).isDarkTheme,
+                onChanged: (value) {
+                  Provider.of<ThemeProvider>(context, listen: false)
+                      .toggleTheme();
+                },
+              ),*/
+            ),
               ListTile(
                 title: const Text("Log out",style: TextStyle(color:Colors.red)),
                 onTap: () =>logout(context),
@@ -392,7 +412,7 @@ Future<void> getUserWorkouts() async {
             },
   calendarStyle: CalendarStyle(
     
-    markerDecoration: BoxDecoration(color: Color.fromARGB(255, 141, 141, 141), shape: BoxShape.circle),weekendTextStyle: TextStyle(color: Colors.white),disabledTextStyle: TextStyle(color: Colors.grey)),
+    markerDecoration: BoxDecoration(color: Color.fromARGB(255, 141, 141, 141), shape: BoxShape.circle),defaultTextStyle: TextStyle(color: Theme.of(context).colorScheme.inverseSurface),weekendTextStyle: TextStyle(color: Theme.of(context).colorScheme.inverseSurface),disabledTextStyle: TextStyle(color: Colors.grey)),
   headerStyle: HeaderStyle(
           formatButtonVisible: false,
           titleCentered: true,

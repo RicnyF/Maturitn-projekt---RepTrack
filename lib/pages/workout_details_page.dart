@@ -29,7 +29,6 @@ void getWorkoutWeight(){
         
     }
   }
-  print(widget.workoutData);
   setState(() {
     totalWeight= weight.toString();
   });

@@ -47,7 +47,6 @@ class RoutineDetailPage extends StatelessWidget {
                         List sets = exercise['sets'] as List<dynamic>;
                         
                         
-                        print(extendedData["name"]);
                         return ListTile(
                           /* NEED TO FIX THIS !! */
                 /*            onTap: () => Navigator.push(

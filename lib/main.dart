@@ -3,6 +3,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rep_track/auth/auth.dart';
 import 'package:rep_track/firebase_options.dart';
 import 'package:rep_track/pages/add_exercises_page.dart';
@@ -16,6 +17,7 @@ import 'package:rep_track/pages/sandbox.dart';
 import 'package:rep_track/pages/start_new_workout_page.dart';
 import 'package:rep_track/theme/dark_mode.dart';
 import 'package:rep_track/theme/light_mode.dart';
+import 'package:rep_track/theme/theme_provider.dart';
 import 'package:rep_track/utils/logger.dart';
 
 Future<void> main() async {
@@ -33,7 +35,10 @@ Future<void> main() async {
     
   );
   AppLogger.logInfo("Firebase initialized successfully.");
-  runApp(const MyApp());
+  runApp( ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),);
  
 }
 
@@ -42,10 +47,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return  MaterialApp(
       
       debugShowCheckedModeBanner: false,
       home: const AuthPage(),
+      themeMode: themeProvider.themeMode,
+
       theme: lightMode,
       darkTheme: darkMode,
       routes:{
