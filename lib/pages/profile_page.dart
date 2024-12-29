@@ -11,7 +11,9 @@ import 'package:rep_track/components/my_boldtext.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rep_track/helper/helper_functions.dart';
 import 'package:logger/logger.dart';
+import 'package:rep_track/pages/edit_profile_page.dart';
 import 'package:rep_track/pages/workout_details_page.dart';
+import 'package:rep_track/services/firestore.dart';
 import 'package:rep_track/theme/theme_provider.dart';
 import 'package:rep_track/utils/logger.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -28,13 +30,13 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final logger = Logger();
-  bool isLoading = false;
   ValueNotifier<DateTime> _selectedDayNotifier = ValueNotifier(DateTime.now());
  
   var _selectedDay = DateTime.now();
   var _focusedDay = DateTime.now();
   final DateFormat _calendarFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
   final storageRef = FirebaseStorage.instance;
+  final firestore = FirestoreService();
   Map<DateTime, List<Map<String, dynamic>>> events = {};
   // current logged in user
   final User ? currentUser = FirebaseAuth.instance.currentUser;
@@ -74,9 +76,7 @@ class _ProfilePageState extends State<ProfilePage> {
   );
 }
 
-  Future<DocumentSnapshot<Map<String,dynamic>>> getUserDetails() async{
-    return await FirebaseFirestore.instance.collection("Users").doc(currentUser!.uid).get();
-  }
+  
 
   Future<void> editPfp(user)async{
     AppLogger.logInfo("Attempting to edit profile picture...");
@@ -137,13 +137,12 @@ Future<void> getUserWorkouts() async {
 
 
   
-  late String imageUrl;
+  String imageUrl ="";
   
  
   @override
   void initState(){
     super.initState();
-    imageUrl='';
     getImageUrl();
     getUserWorkouts();
   }
@@ -151,7 +150,7 @@ Future<void> getUserWorkouts() async {
  Future<void> getImageUrl()async{
     AppLogger.logInfo("Attempting to get image url...");
 
-    final userDoc = await getUserDetails();
+    final userDoc = await firestore.getUserDetails(currentUser);
      Map<String, dynamic>? userData = userDoc.data();
      final url= userData!['photoURL'];    
      
@@ -160,7 +159,6 @@ Future<void> getUserWorkouts() async {
         
         setState((){
           imageUrl = url;
-         isLoading = false;
         });
         AppLogger.logInfo("Image url taken successfully.");
 
@@ -197,7 +195,13 @@ Future<void> getUserWorkouts() async {
             children: [
               ListTile(
                 title: const Text("Edit profile"),
-                onTap: (){},
+                onTap: ()=> Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  EditProfilePage()
+            ),
+          ),
               ),
                ListTile(
               title: Row(
@@ -231,7 +235,7 @@ Provider.of<ThemeProvider>(context, listen: false)
         body: 
       FutureBuilder(
           future: Future.wait([
-          getUserDetails(),
+          firestore.getUserDetails(currentUser),
         ]),
  
         builder: (context,snapshot){
@@ -248,40 +252,16 @@ Provider.of<ThemeProvider>(context, listen: false)
           //data received
           else if (snapshot.hasData){
            
-            final user = snapshot.data![0] as DocumentSnapshot<Map<String, dynamic>>;
+            final user = snapshot.data![0];
 
             
             return Center(
               child: Column(children: [
                 
-                Stack(alignment: Alignment.topRight,
-                children: 
-                [
-                  
-                Photos(imageUrl: imageUrl,height: 150, width: 150,)
-                ,
                 
-                Positioned (
-
-                    right: 5,
-                    top: 5,
-                    child: GestureDetector(
-                    onTap: ()=>editPfp(user),
-                    child: Container( decoration: BoxDecoration(
-                      
-                  color: Theme.of(context).colorScheme.inversePrimary, // Button background color
-                  shape: BoxShape.circle, // Circular button
-                    
-                ),
-                padding: EdgeInsets.all(4), // Padding around the icon
-                child: Icon(
-                  Icons.edit,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 20, ),)
-                  )
-                  )
-                ],),
-
+                  
+                Photos(imageUrl: imageUrl,height: 150, width: 150,),
+                
                 
                 Text(capitalizeFirstLetter(user!['username']),style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25),),
                 const SizedBox(height: 10),
@@ -394,7 +374,9 @@ Provider.of<ThemeProvider>(context, listen: false)
               final onlyDate = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
               final workouts = events[onlyDate] ?? [];
 
-             
+              if(workouts.isEmpty){
+               return;
+              }
               if (workouts.length == 1 ) {
                 Navigator.push(
                   context,
@@ -409,6 +391,8 @@ Provider.of<ThemeProvider>(context, listen: false)
                 _showWorkoutChoiceDialog(context, workouts);
               }
               _selectedDayNotifier.value = DateTime.now();
+    
+ 
             },
   calendarStyle: CalendarStyle(
     

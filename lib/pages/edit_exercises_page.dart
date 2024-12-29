@@ -32,7 +32,7 @@ class _EditExercisesPageState extends State<EditExercisesPage> {
   final User ? currentUser = FirebaseAuth.instance.currentUser;
   DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
   final TextEditingController typeController= TextEditingController();
-
+  
   final TextEditingController muscleGroupController= TextEditingController();
 
   final TextEditingController equipmentController= TextEditingController();

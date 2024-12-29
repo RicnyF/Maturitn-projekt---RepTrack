@@ -6,6 +6,9 @@ class FirestoreService{
   FirebaseFirestore.instance.collection('Exercises');
   final CollectionReference routines = FirebaseFirestore.instance.collection('Routines');
   
+  Future<DocumentSnapshot<Map<String,dynamic>>> getUserDetails(currentUser) async{
+    return await FirebaseFirestore.instance.collection("Users").doc(currentUser!.uid).get();
+  }
    //READ
   Stream<QuerySnapshot> getExercisesStream(){
         final exercisesStream = exercises.orderBy('name', ).snapshots();
