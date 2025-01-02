@@ -86,15 +86,7 @@ class _RegisterPageState extends State<RegisterPage> {
       // Display specific error messages
       AppLogger.logError("Failed to register.", e, stackTrace);
 
-    if (e.code == 'email-already-in-use') {
-      displayMessageToUser("This email is already in use. Try logging in.", context);
-    } else if (e.code == 'invalid-email') {
-      displayMessageToUser("The email format is invalid.", context);
-    } else if (e.code == 'weak-password') {
-      displayMessageToUser("The password is too weak. Use at least 6 characters, .", context);
-    } else {
-      displayMessageToUser("Registration error: ${e.message}", context);
-    }
+    displayMessageToUser(e.message.toString(), context);
   }
       
       

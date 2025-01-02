@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:rep_track/components/buttons/login_buttons.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/helper/helper_functions.dart';
+import 'package:rep_track/pages/forgot_password_page.dart';
 import 'package:rep_track/utils/logger.dart';
 
 class LoginPage extends StatefulWidget {
@@ -49,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
   on FirebaseAuthException catch (e, stackTrace){
     if (mounted) {
     
-    displayMessageToUser(e.code, context);
+    displayMessageToUser(e.message.toString(), context);
         AppLogger.logError("Failed to login.", e, stackTrace);
 
     }
@@ -108,9 +109,16 @@ class _LoginPageState extends State<LoginPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Text("Forgot Password?",
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,)
+                GestureDetector(
+                  onTap: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                      return ForgotPasswordPage();
+                    }));
+                  },
+                  child: Text("Forgot Password?",
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary,)
+                  ),
                 ),
               ],
             ),
