@@ -10,7 +10,6 @@ import 'package:rep_track/components/buttons/login_buttons.dart';
 import 'package:rep_track/components/my_boldtext.dart';
 import 'package:rep_track/components/my_multiple_selection_field.dart';
 import 'package:rep_track/components/my_selection_field.dart';
-import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/components/my_textfield2.dart';
 import 'package:rep_track/helper/helper_functions.dart';
 import 'package:rep_track/utils/logger.dart';

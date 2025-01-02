@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:rep_track/components/my_boldtext.dart';
 
 class ExerciseDetailAboutPage extends StatelessWidget {
   final String exerciseId;

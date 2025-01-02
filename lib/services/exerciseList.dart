@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:rep_track/pages/edit_exercises_page.dart';
 import 'package:rep_track/pages/exercise%20details/exercise_detail_page.dart';
 import 'package:rep_track/services/firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ExerciseList extends StatefulWidget {
   const ExerciseList({
@@ -20,9 +20,12 @@ class ExerciseList extends StatefulWidget {
   State<ExerciseList> createState() => _ExerciseListState();
 }
 
+
 class _ExerciseListState extends State<ExerciseList> {
-  final List<String> selectedExercises = []; 
+  final List<String> selectedExercises = [];
   final firestoreService = FirestoreService();
+  final currentUser = FirebaseAuth.instance.currentUser;
+
   void toggleSelection(String docID) {
     setState(() {
       if (selectedExercises.contains(docID)) {
@@ -31,7 +34,7 @@ class _ExerciseListState extends State<ExerciseList> {
         selectedExercises.add(docID);
       }
     });
-    
+
     if (widget.onExerciseSelected != null) {
       widget.onExerciseSelected!(selectedExercises);
     }
@@ -49,41 +52,55 @@ class _ExerciseListState extends State<ExerciseList> {
           return Center(child: Text("Error: ${snapshot.error}"));
         }
         if (snapshot.hasData) {
-          List exercisesList = snapshot.data!.docs;
+          final List<DocumentSnapshot> exercisesList = snapshot.data!.docs.where((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            final createdBy = data['createdBy'] as String?;
+            final type = data['type'] as String?;
+
+            // Admin user sees everything
+            if (currentUser?.email == "admin@admin.cz") {
+              return true;
+            }
+
+            // Regular users see only their exercises or predefined ones
+            return createdBy == currentUser?.uid || type == "predefined";
+          }).toList();
+
           List<String> letter = [];
           return ListView.builder(
             itemCount: exercisesList.length,
             itemBuilder: (context, index) {
               DocumentSnapshot document = exercisesList[index];
               String docID = document.id;
-              Map<String, dynamic> data =
-                  document.data() as Map<String, dynamic>;
+              Map<String, dynamic> data = document.data() as Map<String, dynamic>;
               String exerciseName = data['name'];
               String firstLetter = exerciseName[0].toUpperCase();
 
               if (!letter.contains(firstLetter)) {
                 letter.add(firstLetter);
-                return Column(children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: ListTile(
-                      tileColor: Theme.of(context).colorScheme.primary,
-                      title: Text(firstLetter),
-                      minVerticalPadding: 20,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: ListTile(
+                        tileColor: Theme.of(context).colorScheme.primary,
+                        title: Text(firstLetter),
+                        minVerticalPadding: 20,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
-                  ),
-                  ExerciseListTile(
-                    exerciseName: exerciseName,
-                    docID: docID,
-                    data: data,
-                    isSelected: selectedExercises.contains(docID),
-                    isSelectionMode: widget.isSelectionMode,
-                    onToggleSelection: toggleSelection,
-                  )
-                ]);
+                    ExerciseListTile(
+                      exerciseName: exerciseName,
+                      docID: docID,
+                      data: data,
+                      isSelected: selectedExercises.contains(docID),
+                      isSelectionMode: widget.isSelectionMode,
+                      onToggleSelection: toggleSelection,
+                    )
+                  ],
+                );
               }
 
               return ExerciseListTile(
@@ -103,6 +120,8 @@ class _ExerciseListState extends State<ExerciseList> {
     );
   }
 }
+
+
 
 class ExerciseListTile extends StatelessWidget {
   const ExerciseListTile({
@@ -172,25 +191,7 @@ class ExerciseListTile extends StatelessWidget {
               isSelected ? Icons.check_box : Icons.check_box_outline_blank,
               color: isSelected ? Colors.blue : Colors.grey,
             )
-          : /*TextButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditExercisesPage(
-                    exerciseId: docID,
-                    exerciseData: data,
-                  ),
-                ),
-              ),
-              style: TextButton.styleFrom(
-                maximumSize: const Size(80, 40),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                backgroundColor: Colors.blue,
-              ),
-              child: const Text("Edit"),
-            ),*/null
+          : null
     );
   }
 }

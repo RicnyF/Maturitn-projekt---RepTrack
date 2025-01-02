@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/pages/profile_page.dart';
 import 'package:rep_track/pages/start_new_workout_page.dart';

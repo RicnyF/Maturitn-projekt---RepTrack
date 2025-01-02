@@ -13,7 +13,6 @@ import 'package:rep_track/pages/home_page.dart';
 import 'package:rep_track/pages/profile_page.dart';
 import 'package:rep_track/pages/routines/routines_page.dart';
 import 'package:rep_track/pages/routines/select_exercise_page.dart';
-import 'package:rep_track/pages/sandbox.dart';
 import 'package:rep_track/pages/start_new_workout_page.dart';
 import 'package:rep_track/theme/dark_mode.dart';
 import 'package:rep_track/theme/light_mode.dart';

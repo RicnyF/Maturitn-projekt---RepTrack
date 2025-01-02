@@ -23,7 +23,8 @@ class MyTextfield extends StatelessWidget {
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
         ),
-        labelText: labelText,
+        labelText: labelText.isEmpty ? null : labelText,        
+        hintStyle: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),
         hintText: hintText,
       ),
       obscureText: obscureText,

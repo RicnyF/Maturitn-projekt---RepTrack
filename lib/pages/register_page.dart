@@ -11,7 +11,7 @@ import 'package:rep_track/utils/logger.dart';
 class RegisterPage extends StatefulWidget {
    final void Function()? onTap;
   
-  RegisterPage({super.key,
+  const RegisterPage({super.key,
   required this.onTap});
 
   @override

@@ -30,10 +30,10 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final logger = Logger();
-  ValueNotifier<DateTime> _selectedDayNotifier = ValueNotifier(DateTime.now());
+  final ValueNotifier<DateTime> _selectedDayNotifier = ValueNotifier(DateTime.now());
  
-  var _selectedDay = DateTime.now();
-  var _focusedDay = DateTime.now();
+  final _selectedDay = DateTime.now();
+  final _focusedDay = DateTime.now();
   final DateFormat _calendarFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
   final storageRef = FirebaseStorage.instance;
   final firestore = FirestoreService();
@@ -199,7 +199,11 @@ Future<void> getUserWorkouts() async {
             context,
             MaterialPageRoute(
               builder: (context) =>
-                  EditProfilePage()
+                  EditProfilePage(onSave: () {
+          setState(() {
+            getImageUrl(); // Reload user profile data
+            getUserWorkouts();
+          });})
             ),
           ),
               ),
@@ -263,7 +267,7 @@ Provider.of<ThemeProvider>(context, listen: false)
                 Photos(imageUrl: imageUrl,height: 150, width: 150,),
                 
                 
-                Text(capitalizeFirstLetter(user!['username']),style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25),),
+                Text(capitalizeFirstLetter(user['username']),style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25),),
                 const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,

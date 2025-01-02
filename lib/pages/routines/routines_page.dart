@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/helper/helper_functions.dart';
 import 'package:rep_track/pages/profile_page.dart';
@@ -94,6 +95,7 @@ class _RoutinesPageState extends State<RoutinesPage> {
   }
   
   final firestoreService = FirestoreService();
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
@@ -124,7 +126,24 @@ class _RoutinesPageState extends State<RoutinesPage> {
                 return Center(child: Text("Error: ${snapshot.error}"));
               }
               if (snapshot.hasData && snapshot.data!= null) {
-                List routinesList = snapshot.data!.docs;
+                final currentUser = FirebaseAuth.instance.currentUser;
+
+      final routinesList = snapshot.data!.docs.where((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        final createdBy = data['createdBy'] as String?;
+        final type = data['type'] as String?;
+
+        if (currentUser?.email == "admin@admin.cz") {
+          return true;
+        }
+
+        return createdBy == currentUser?.uid || type == "predefined";
+      }).toList();
+
+      if (routinesList.isEmpty) {
+        return const Center(child: Text("No routines available"));
+      }
+
                 return ListView.builder(
                     itemCount: routinesList.length,
                     itemBuilder: (context, index) {
@@ -151,43 +170,46 @@ class _RoutinesPageState extends State<RoutinesPage> {
                                           children: [
                                             Text(routineData['name'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),),
                                             PopupMenuButton<SampleItem>(
-                                              onSelected: (SampleItem item) {
-                                                setState(() {
-                                                  selectedItem = item;
-                                                });
-                                                switch (item) {
-                                                  case SampleItem.itemOne:
-                                                    routineEdit(context, routineData);
-                                                    break;
-                                                  case SampleItem.itemTwo:
-                                                    delete(routineData);
-                                                    break;
-                                                  case SampleItem.itemThree:
-                                                    routineDetailView(context, routineData);
-                                                    break;
-                                                }
-                                              },
-                                              itemBuilder: (BuildContext
-                                                      context) =>
-                                                  <PopupMenuEntry<SampleItem>>[
-                                                const PopupMenuItem<SampleItem>(
-                                                  value: SampleItem.itemOne,
-                                                  child: Text('Edit Routine'),
-                                                ),
-                                                PopupMenuItem<SampleItem>(
-                                                  value: SampleItem.itemTwo,
-                                                  child: Text('Delete Routine'),
-                                                 
-                                                      
-                                                ),
-                                                const PopupMenuItem<SampleItem>(
-                                                  value: SampleItem.itemThree,
-                                                  child: Text('View Details'),
-                                                ),
-                                              ],
-                                              icon: const Icon(Icons
-                                                  .more_vert), // Menu icon for each card
-                                            ),
+  onSelected: (SampleItem item) {
+    setState(() {
+      selectedItem = item;
+    });
+    switch (item) {
+      case SampleItem.itemOne:
+        routineEdit(context, routineData);
+        break;
+      case SampleItem.itemTwo:
+        delete(routineData);
+        break;
+      case SampleItem.itemThree:
+        routineDetailView(context, routineData);
+        break;
+    }
+  },
+  itemBuilder: (BuildContext context) {
+    final isAdmin = currentUser?.email == "admin@admin.cz";
+    final isCreator = routineData['createdBy'] == currentUser?.uid;
+
+    return <PopupMenuEntry<SampleItem>>[
+      if (isAdmin || isCreator)
+        const PopupMenuItem<SampleItem>(
+          value: SampleItem.itemOne,
+          child: Text('Edit Routine'),
+        ),
+      if (isAdmin || isCreator)
+        const PopupMenuItem<SampleItem>(
+          value: SampleItem.itemTwo,
+          child: Text('Delete Routine'),
+        ),
+      const PopupMenuItem<SampleItem>(
+        value: SampleItem.itemThree,
+        child: Text('View Details'),
+      ),
+    ];
+  },
+  icon: const Icon(Icons.more_vert),
+),
+
                                           ],
                                         ),
                                         const SizedBox(

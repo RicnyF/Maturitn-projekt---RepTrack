@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/auth/login_or_register.dart';
 import 'package:rep_track/pages/home_page.dart';
-import 'package:rep_track/pages/sandbox.dart';
 import 'package:rep_track/utils/logger.dart';
 
 

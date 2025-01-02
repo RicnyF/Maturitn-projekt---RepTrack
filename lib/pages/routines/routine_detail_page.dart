@@ -1,8 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:rep_track/components/my_boldtext.dart';
-import 'package:rep_track/pages/edit_exercises_page.dart';
-import 'package:rep_track/pages/exercise%20details/exercise_detail_page.dart';
 import 'package:rep_track/pages/profile_page.dart';
 import 'package:rep_track/services/firestore.dart';
 

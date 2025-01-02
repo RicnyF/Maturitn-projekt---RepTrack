@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:rep_track/pages/edit_exercises_page.dart';
 import 'package:rep_track/pages/exercise%20details/exercise_detail_about_page.dart';
 import 'package:rep_track/pages/exercise%20details/exercise_detail_best_page.dart';
 import 'package:rep_track/pages/exercise%20details/exercise_detail_history_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ExerciseDetailPage extends StatefulWidget {
  
@@ -24,7 +24,8 @@ final ref =FirebaseFirestore.instance.collection('Users');
 
 class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
   late final List <Widget> _pages;
-  
+  final currentUser = FirebaseAuth.instance.currentUser;
+
     
 
   
@@ -59,7 +60,7 @@ _pages = <Widget>[
       child:Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        actions: [IconButton(onPressed: () => Navigator.push(
+        actions: [widget.exerciseData["type"] != "predefined" || currentUser!.email =="admin@admin.cz" ? IconButton(onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => EditExercisesPage(
@@ -67,7 +68,7 @@ _pages = <Widget>[
                     exerciseData: widget.exerciseData,
                   ),
                 ),
-              ), icon: Icon(Icons.edit))],
+              ), icon: Icon(Icons.edit)):SizedBox()],
         title: Text(widget.exerciseData["name"], style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
         centerTitle: true,
         bottom: TabBar( tabs: _tabTitles.map((title) => Tab(text: title)).toList(),
