@@ -41,7 +41,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
             Text("Your Workout",style: TextStyle( fontSize: 30)),
             SizedBox(height: 20,),
             MyExerciseButton(text: "Start Empty workout", onTap: ()=>{Navigator.pushNamed(context, '/new_workout_page')
-            },icon: Icons.fitness_center),
+            },icon: Icons.start),
             SizedBox(height: 20,),
               Text("Your Collections",style: TextStyle( fontSize: 30)),
               SizedBox(height: 20,),
@@ -49,7 +49,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
             },icon: Icons.loop,),
              SizedBox(height: 5,),
               MyExerciseButton(text: "Exercises", onTap: ()=>{Navigator.pushNamed(context, '/exercises_page')
-            }, icon:Icons.health_and_safety),
+            }, icon:Icons.fitness_center),
           ]
       
           ,)

@@ -37,12 +37,23 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) { 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Text("Password Reset"),
+        centerTitle: true,
+      ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25),
+        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            Image.asset('images/RepTrack.png',scale: 2,),
+              
+              
+              
+              const SizedBox(
+                height: 50,
+              ),
+              
             Text(
             "Enter your Email and we will send you a password reset link",
             textAlign: TextAlign.center,

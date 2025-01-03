@@ -63,91 +63,83 @@ class _LoginPageState extends State<LoginPage> {
       resizeToAvoidBottomInset : false,
         backgroundColor: Theme.of(context).colorScheme.surface,
         body: Center(
-            child: Padding(
-          padding: const EdgeInsets.all(25),
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            
-            Icon(
-              Icons.person,
-              size: 80, 
-              color: Theme.of(context).colorScheme.inversePrimary),
-            
-            const SizedBox(
-              height: 25,
-            ),
-            
-            const Text(
-              "R E P T R A C K",
-              style: TextStyle(fontSize: 20),
-            ),
-            
-            const SizedBox(
-              height: 50,
-            ),
-            
-            
-            MyTextfield(
-              hintText: "Email Address",
-              obscureText: false,
-              controller: emailController,
-            ),
-            
-            
-            const SizedBox(
-              height: 10,
-            ),
-            
-            
-            MyTextfield(
-              hintText: "Password",
-              obscureText: true,
-              controller: passwordController,
-            ),
-             const SizedBox(
-              height: 10,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context){
-                      return ForgotPasswordPage();
-                    }));
-                  },
-                  child: Text("Forgot Password?",
+            child: SingleChildScrollView(
+              child: Padding(
+                        padding: const EdgeInsets.all(25),
+                        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              
+              Image.asset('images/RepTrack.png',scale: 2,),
+              
+              
+              
+              const SizedBox(
+                height: 50,
+              ),
+              
+              
+              MyTextfield(
+                hintText: "Email Address",
+                obscureText: false,
+                controller: emailController,
+              ),
+              
+              
+              const SizedBox(
+                height: 10,
+              ),
+              
+              
+              MyTextfield(
+                hintText: "Password",
+                obscureText: true,
+                controller: passwordController,
+              ),
+               const SizedBox(
+                height: 10,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context){
+                        return ForgotPasswordPage();
+                      }));
+                    },
+                    child: Text("Forgot Password?",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,)
+                    ),
+                  ),
+                ],
+              ),
+               const SizedBox(
+                height: 25,
+              ),
+              
+              MyLoginButton(
+                text:"Login",
+                onTap: login,),
+              
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Don´t have an account? ",
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.secondary,)
                   ),
-                ),
-              ],
-            ),
-             const SizedBox(
-              height: 25,
-            ),
-            
-            MyLoginButton(
-              text:"Login",
-              onTap: login,),
-            
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("Don´t have an account? ",
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,)
-                ),
-                GestureDetector(
-                  onTap: widget.onTap,
-                  child: Text("Register Here",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.inversePrimary,)
+                  GestureDetector(
+                    onTap: widget.onTap,
+                    child: Text("Register Here",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.inversePrimary,)
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ]),
-        )));
+                ],
+              ),
+                        ]),
+                      ),
+            )));
   }
 }
