@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rep_track/auth/auth.dart';
-import 'package:rep_track/components/my_boldtext.dart';
+import 'package:rep_track/components/my_bold_text.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rep_track/helper/helper_functions.dart';
 import 'package:logger/logger.dart';
@@ -31,10 +30,6 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final logger = Logger();
   final ValueNotifier<DateTime> _selectedDayNotifier = ValueNotifier(DateTime.now());
- 
-  final _selectedDay = DateTime.now();
-  final _focusedDay = DateTime.now();
-  final DateFormat _calendarFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
   final storageRef = FirebaseStorage.instance;
   final firestore = FirestoreService();
   Map<DateTime, List<Map<String, dynamic>>> events = {};
@@ -78,6 +73,69 @@ class _ProfilePageState extends State<ProfilePage> {
 
   
 
+   void deleteAccount() async {
+    AppLogger.logInfo("Attempting to delete a routine...");
+
+    final result = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text("Are you sure ?"),
+              content: Text(
+                  "This action will permanently delete account with email ${currentUser!.email}!"),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text("Cancel")),
+                TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text(
+                      "Delete",
+                      style: TextStyle(color: Colors.red),
+                    ))
+              ],
+            ));
+    if (result == null || !result) {
+      return;
+    }
+    
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        barrierDismissible: false,
+      );
+    }
+    try {
+      
+      await FirebaseFirestore.instance
+          .collection("Users")
+          .doc(currentUser!.uid)
+          .delete();
+
+      if (mounted) {
+        Navigator.pop(context);
+
+        displayMessageToUser(
+          "Account with email ${currentUser!.email} deleted successfully.",
+          context,
+        );
+      }
+      await currentUser!.delete();
+      AppLogger.logInfo("Routine deleted successfully.");
+    } on FirebaseAuthException catch (e, stackTrace) {
+      if (mounted) {
+        Navigator.pop(context);
+        displayMessageToUser(
+          "An error occurred while deleting the account: $e",
+          context,
+        );
+      }
+      AppLogger.logError("Failed to delete routine.", e, stackTrace);
+    }
+  }
+  
   Future<void> editPfp(user)async{
     AppLogger.logInfo("Attempting to edit profile picture...");
 
@@ -96,7 +154,7 @@ class _ProfilePageState extends State<ProfilePage> {
     AppLogger.logInfo("Profile picture edited successfully.");
     }
     
-    catch(e,stackTrace){
+    on FirebaseAuthException catch(e,stackTrace){
       AppLogger.logError("Failed to edit profile picture.", e, stackTrace);
 
     }
@@ -162,7 +220,7 @@ Future<void> getUserWorkouts() async {
         });
         AppLogger.logInfo("Image url taken successfully.");
 
-      } catch (e,stackTrace) {
+      } on FirebaseAuthException catch (e,stackTrace) {
        AppLogger.logError("Failed to get image url.", e, stackTrace);
 
       }
@@ -219,17 +277,15 @@ Provider.of<ThemeProvider>(context, listen: false)
                       .toggleTheme();
               },
               
-              /*Switch(
-                value: Provider.of<ThemeProvider>(context).isDarkTheme,
-                onChanged: (value) {
-                  Provider.of<ThemeProvider>(context, listen: false)
-                      .toggleTheme();
-                },
-              ),*/
+          
             ),
               ListTile(
                 title: const Text("Log out",style: TextStyle(color:Colors.red)),
                 onTap: () =>logout(context),
+              ),
+              ListTile(
+                title: const Text("Delete account",style: TextStyle(color:Colors.red)),
+                onTap: deleteAccount,
               )
             ],
           ),
@@ -306,57 +362,7 @@ Provider.of<ThemeProvider>(context, listen: false)
                 SizedBox(
                   width: 350,
                   height: 400,
-                  child: /*TableCalendar(
-                    focusedDay: _selectedDay,
-                     firstDay: DateTime.utc(2010, 10, 16),
-                     lastDay: DateTime.now(),
-                     selectedDayPredicate: (day) {
-                    return isSameDay(_selectedDay, day);
-                  },
-                  eventLoader:(day){
-                    return events[DateTime(day.year,day.month,day.day)]?? [];
-                  },
-                  calendarStyle: CalendarStyle(weekendTextStyle: TextStyle(color: Colors.white),disabledTextStyle: TextStyle(color: Colors.grey)),
-                 onDaySelected: (selectedDay, focusedDay) {
-
-    setState(() {
-      _selectedDay = selectedDay;
-      _focusedDay = focusedDay;
-    });
-
-    /*final onlyDate = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
-
-    if (events.containsKey(onlyDate) && events[onlyDate]!.isNotEmpty) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => WorkoutDetailsPage(
-            workoutId: events[onlyDate]![0]["workoutId"],
-            workoutData: events[onlyDate]![0],
-          ),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("No workouts found for the selected day.")),
-      );
-    }
-  */
-},
-
-
-                  headerStyle: HeaderStyle(
-          formatButtonVisible: false,
-          titleCentered: true,
-          titleTextFormatter: (date, locale) {
-            
-            return DateFormat('yyyy MMMM').format(date);
-          },
-          titleTextStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        calendarFormat: CalendarFormat.month,
-                 
-                  ),*/
+                  child:
                    ValueListenableBuilder<DateTime>(
     valueListenable: _selectedDayNotifier,
     builder: (context, selectedDay, child) {
@@ -415,20 +421,7 @@ Provider.of<ThemeProvider>(context, listen: false)
 
 ;
              })   ),
-                /*ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: workouts.length,
-                    itemBuilder: (context, index) {
-                      final workout = workouts[index].data();
-                      return ListTile(
-                        title: Text(workout["workoutName"] ?? "Unnamed Workout"),
-                        subtitle: Text("Date: ${workout['createdAt'] ?? "Unknown"}"),
-                        onTap: () {
-                          // Navigate to workout details if needed
-                        },
-                      );
-          })*/],
+                ],
               ),
             );
             }else {

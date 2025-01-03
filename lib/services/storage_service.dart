@@ -2,9 +2,11 @@
 
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:rep_track/utils/logger.dart';
 
 class StorageService with ChangeNotifier{
 List<String> _imageUrls = [];
@@ -31,13 +33,17 @@ final urls= await Future.wait(result.items.map((ref) => ref.getDownloadURL()));
 }
 
 Future<void> deleteImages(String imageUrl)async{
+  AppLogger.logInfo("Attempting to delete image...");
+
   try{
     _imageUrls.remove(imageUrl);
     final String path= extractPathFromUrl(imageUrl);
     await FirebaseStorage.instance.ref(path).delete();
+      AppLogger.logInfo("Image deleted successfully...");
+
   }
-  catch(e){
-    print ("Error deleting image: $e");
+  on FirebaseAuthException catch(e, stackTrace){
+      AppLogger.logError("Failed to delete image.", e, stackTrace);
     notifyListeners();
   }
 }
@@ -47,6 +53,8 @@ String extractPathFromUrl(String url){
   return Uri.decodeComponent(encodedPath);
 }
 Future<void> uploadImage()async{
+    AppLogger.logInfo("Attempting to upload image...");
+
   _isUploading = true;
   notifyListeners();
   final ImagePicker picker = ImagePicker();
@@ -61,12 +69,14 @@ Future<void> uploadImage()async{
     notifyListeners();
 
   }
-  catch(e){
-    print("Error uploading... $e");
+  on FirebaseAuthException catch(e, stackTrace){
+      AppLogger.logError("Failed to update image.", e, stackTrace);
   }
   finally{
     _isUploading = false;
     notifyListeners();
+    AppLogger.logInfo("Image uploaded successfully...");
+
   }
 }
 

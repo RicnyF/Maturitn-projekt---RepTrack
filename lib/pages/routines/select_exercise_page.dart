@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rep_track/services/exerciseList.dart';
+import 'package:rep_track/services/exercise_list.dart';
 
 class SelectExercisesPage extends StatefulWidget {
   const SelectExercisesPage({super.key});

@@ -5,7 +5,6 @@ import 'package:rep_track/pages/edit_exercises_page.dart';
 import 'package:rep_track/pages/exercise%20details/exercise_detail_about_page.dart';
 import 'package:rep_track/pages/exercise%20details/exercise_detail_best_page.dart';
 import 'package:rep_track/pages/exercise%20details/exercise_detail_history_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class ExerciseDetailPage extends StatefulWidget {
  

@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:rep_track/components/buttons/login_buttons.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/helper/helper_functions.dart';
 import 'package:rep_track/utils/logger.dart';
@@ -28,13 +27,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     }
     try{await FirebaseAuth.instance.sendPasswordResetEmail(email: emailController.text.trim());
     
-    displayMessageToUser('If the email is registered, a reset link has been sent.', context);}
+    if(mounted)displayMessageToUser('If the email is registered, a reset link has been sent.', context);}
     on FirebaseAuthException catch (e, stackTrace){
-      displayMessageToUser(e.message.toString(), context);
+      if(mounted)displayMessageToUser(e.message.toString(), context);
       AppLogger.logError("Failed to reset password.", e, stackTrace);
 
     }
   }
+  @override
   Widget build(BuildContext context) { 
     return Scaffold(
       appBar: AppBar(),
@@ -52,8 +52,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             MyTextfield(hintText: "Email", obscureText: false, controller: emailController),
             SizedBox(height: 10,),
          MaterialButton(onPressed: passwordReset,
-         child: Text("Reset Password"),
-      color: Theme.of(context).colorScheme.primary)
+        
+      color: Theme.of(context).colorScheme.primary, child: Text("Reset Password"),)
           ],
         ),
       ),);

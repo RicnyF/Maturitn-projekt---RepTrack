@@ -12,15 +12,15 @@ import 'package:timer_count_down/timer_controller.dart';
 import 'package:rep_track/utils/logger.dart';
 import 'package:timer_count_down/timer_count_down.dart';
 class StartNewWorkoutPage extends StatefulWidget {
-  Map<String, Duration> routineRestTimers;
-  Map<String, List<Map<String, dynamic>>> routineSetsPerExercise;
+  final Map<String, Duration> routineRestTimers;
+  final Map<String, List<Map<String, dynamic>>> routineSetsPerExercise;
 
-  List<String> routineSelectedExercises;
-  Map<String, TextEditingController> routineNoteControllers;
-  Map<String, Map<int, TextEditingController>> routineWeightControllers;
-  Map<String, Map<int, TextEditingController>> routineRepControllers;
-  String routineName;
-  StartNewWorkoutPage({super.key,
+  final List<String> routineSelectedExercises;
+  final Map<String, TextEditingController> routineNoteControllers;
+  final Map<String, Map<int, TextEditingController>> routineWeightControllers;
+  final Map<String, Map<int, TextEditingController>> routineRepControllers;
+  final String routineName;
+  const StartNewWorkoutPage({super.key,
   this.routineRestTimers = const{},
   this.routineSetsPerExercise = const {},
   this.routineSelectedExercises = const [],
@@ -326,7 +326,7 @@ showDialog(context: context, builder: (context)=> const Center(
 
       resetRoutine();
       }
-      catch(e,stackTrace){
+      on FirebaseAuthException catch(e,stackTrace){
       AppLogger.logError("Failed to save routine.", e, stackTrace);
       }
       

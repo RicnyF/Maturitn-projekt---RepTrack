@@ -174,7 +174,7 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
 
       resetRoutine();
       }
-      catch(e, stackTrace){
+       on FirebaseAuthException catch(e, stackTrace){
       AppLogger.logError("Failed to save routine.", e, stackTrace);
       
     }

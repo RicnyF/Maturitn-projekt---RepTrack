@@ -58,7 +58,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         });
         AppLogger.logInfo("User data loaded successfully.");
       }
-    } catch (e, stackTrace) {
+    }on FirebaseAuthException catch (e, stackTrace) {
       AppLogger.logError("Failed to load user data.", e, stackTrace);
     }
   }
@@ -93,13 +93,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
   try {
     final credential = EmailAuthProvider.credential(email: email, password: password);
     await FirebaseAuth.instance.currentUser!.reauthenticateWithCredential(credential);
-    AppLogger.logInfo("Reauthentication successful.");
-  } catch (e, stackTrace) {
-    AppLogger.logError("Reauthentication failed.", e, stackTrace);
-    throw FirebaseAuthException(
-      code: 'reauthentication-failed',
-      message: 'Reauthentication failed. Please try again.',
-    );
+    AppLogger.logInfo("Re-authentication successful.");
+  }on FirebaseAuthException catch (e, stackTrace) {
+    AppLogger.logError("Re-authentication failed.", e, stackTrace);
+    
   }
 }
 
@@ -119,7 +116,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     // Prompt for password and reauthenticate the user
     final password = await promptForPassword(context);
     if (password == null || password.isEmpty) {
-      if(context.mounted){ScaffoldMessenger.of(context).showSnackBar(
+      if(mounted){ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Password is required to update profile.')),
       );
       return;
@@ -131,27 +128,29 @@ class _EditProfilePageState extends State<EditProfilePage> {
   
    
 
-    if(context.mounted){
+    if(mounted){
     await FirebaseFirestore.instance.collection("Users").doc(currentUser!.uid).update({
       'username': usernameController.text,
       'birthDate': birthdayController.text,
       'photoURL': imageUrl,
       'updatedAt': DateTime.now(),
     });
-    
-    ScaffoldMessenger.of(context).showSnackBar(
+    }
+    if(mounted){ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Profile updated successfully!')),
     );
-    AppLogger.logInfo("Profile saved successfully.");}
+    AppLogger.logInfo("Profile saved successfully.");
         widget.onSave();
 
     Navigator.pop(context);
-  } catch (e, stackTrace) {
+
+    }
+  }on FirebaseAuthException catch (e, stackTrace) {
     AppLogger.logError("Failed to save profile.", e, stackTrace);
-    ScaffoldMessenger.of(context).showSnackBar(
+    if(mounted){ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Failed to update profile. Please try again.')),
     );
-    Navigator.pop(context);
+    Navigator.pop(context);}
   }
 }
 
@@ -179,7 +178,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       });
 
      
-    } catch (e, stackTrace) {
+    }on FirebaseAuthException catch (e, stackTrace) {
       AppLogger.logError("Failed to update profile picture.", e, stackTrace);
       
     }

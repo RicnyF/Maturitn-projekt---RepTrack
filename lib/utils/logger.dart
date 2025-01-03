@@ -28,7 +28,7 @@ class AppLogger {
     _logger.d(message);
   }
 
-  static void logVerbose(String message) {
-    _logger.v(message);
+  static void logTrace(String message) {
+    _logger.t(message);
   }
 }

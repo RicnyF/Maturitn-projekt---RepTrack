@@ -30,10 +30,7 @@ class _RoutinesPageState extends State<RoutinesPage> {
       return 180;
     }
   }
-  
-  @override
   SampleItem? selectedItem;
-
   void delete(routine) async {
     AppLogger.logInfo("Attempting to delete a routine...");
 
@@ -82,7 +79,7 @@ class _RoutinesPageState extends State<RoutinesPage> {
         );
       }
       AppLogger.logInfo("Routine deleted successfully.");
-    } catch (e, stackTrace) {
+    }on FirebaseAuthException catch (e, stackTrace) {
       if (mounted) {
         Navigator.pop(context);
         displayMessageToUser(

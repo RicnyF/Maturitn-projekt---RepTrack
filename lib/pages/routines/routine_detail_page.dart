@@ -15,7 +15,6 @@ class RoutineDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
    final firestore = FirestoreService();
-   Map<String, dynamic> extendedData = {};
    
    
     

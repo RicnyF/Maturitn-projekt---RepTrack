@@ -66,7 +66,7 @@ class ExerciseDetailBestPage extends StatefulWidget {
     AppLogger.logInfo("Personal best taken successfully.");
 
     return highestWeightRecord;
-  } catch (e, stackTrace) {
+  } on FirebaseAuthException catch (e, stackTrace) {
       AppLogger.logError("Failed to get personal best.", e, stackTrace);
     return null;
   }

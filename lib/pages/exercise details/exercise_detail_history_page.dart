@@ -59,7 +59,7 @@ class _ExerciseDetailHistoryPageState extends State<ExerciseDetailHistoryPage> {
       }
       AppLogger.logInfo("Exercise history fetches successfully...");
 
-    } catch (e, stackTrace) {
+    }on FirebaseAuthException catch (e, stackTrace) {
       AppLogger.logError("Failed to get fetch exercises.", e, stackTrace);
     }
 

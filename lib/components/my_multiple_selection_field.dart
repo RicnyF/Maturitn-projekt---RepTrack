@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rep_track/components/my_boldtext.dart';
+import 'package:rep_track/components/my_bold_text.dart';
 
 class MultipleSelectionField extends StatefulWidget {
   final String label;

@@ -243,7 +243,7 @@ checkKeys();
 
       resetRoutine();
       }
-      catch(e, stackTrace){
+       on FirebaseAuthException catch(e, stackTrace){
       AppLogger.logError("Failed to edit routine.", e, stackTrace);
       
     }

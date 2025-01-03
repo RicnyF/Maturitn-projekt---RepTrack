@@ -6,7 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:rep_track/components/my_boldtext.dart';
+import 'package:rep_track/components/my_bold_text.dart';
 import 'package:rep_track/components/my_multiple_selection_field.dart';
 import 'package:rep_track/components/my_selection_field.dart';
 
@@ -108,7 +108,7 @@ void delete() async{
     }
     AppLogger.logInfo("Exercise deleted successfully.");
 
-  } catch (e,stackTrace) {
+  }on FirebaseAuthException catch (e,stackTrace) {
     if(mounted){
     Navigator.pop(context);
     displayMessageToUser(
@@ -161,10 +161,10 @@ void edit() async{
      if(mounted){
         Navigator.pop(context);
         displayMessageToUser("Exercise edited", context);
-        AppLogger.logInfo("Exercies edited successfully.");
+        AppLogger.logInfo("Exercises edited successfully.");
 
       }}
-      catch(e, stackTrace){
+      on FirebaseAuthException catch(e, stackTrace){
             AppLogger.logError("Failed to edit the exercise.", e, stackTrace);
 
       }
