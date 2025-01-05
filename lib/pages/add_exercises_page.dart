@@ -53,35 +53,44 @@ final storageRef = FirebaseStorage.instance;
   
 
 void submit() async{
+    /*Získání unique ID*/
     final exerciseId = FirebaseFirestore.instance.collection('exercises').doc().id;
       AppLogger.logInfo("Attempting to save a exercise...");
-
+    /*Načítací kolečko*/
     showDialog(context: context, builder: (context)=> const Center(
       child: CircularProgressIndicator(),
     )
     );
-    
+    /*Kontrola zda nejsou hodnoty prázdné*/
     if(typeController.text.isEmpty || muscleGroupController.text.isEmpty || muscleController.text.isEmpty ||nameController.text.isEmpty || equipmentController.text.isEmpty ){
       if(mounted){
+      /*Vypnutí načítacího kolečka*/
       Navigator.pop(context);
+      /*Vypíše na obrazovku text uživateli*/
       displayMessageToUser("All fields must be filled ", context);}
       return;
     }
+    /*Získání reference na obrázek*/
     final imageRef = storageRef.ref().child('exercises').child("${currentUser?.email}-${nameController.text}");
+    /* kontrola jestli není obrázek prázdný*/
     if(_imageFile!=null){
+    
     final imageBytes= await _imageFile!.readAsBytes();
+    /*Uložení do storage*/
     await imageRef.putData(imageBytes);
+    /*Získání URL k storage pro uložení do USERS*/
     imageUrl = await imageRef.getDownloadURL();
     }
       if(mounted)Navigator.pop(context);
       try{
-        
+        /* Uložení do databáze*/
         await FirebaseFirestore.instance.collection("Exercises").doc(exerciseId).set({
         'exerciseId': exerciseId,
         'name':  nameController.text,
         'trackingType': typeController.text,
         'muscleGroup': muscleGroupController.text,
         'muscles' : muscleController.text,
+        /*Typ určuje jestli má být viditelný pro všechny nebo jen pro daného uživatele */
         'type': currentUser?.email =="admin@admin.cz" ?"predefined":"custom",
         'createdBy': currentUser?.uid,
         'imageUrl': imageUrl,
@@ -91,11 +100,13 @@ void submit() async{
       });
      if(mounted){
         Navigator.pop(context);
+        /* Jestli je user admin@admin.cz tak se cvik uloží pro všechny jinak jen pro uživatele*/
         displayMessageToUser(currentUser?.email =="admin@admin.cz" ?"Exercise created for everyone":"Exercise created", context);
         AppLogger.logInfo("Exercise saved successfully.");
 
       }}
      on FirebaseAuthException catch (e, stackTrace) {
+    /*Logger se vypisuje do konzole pro mě, mohl bych však udělat logfile pro uživatele*/
     AppLogger.logError("Failed to save exercise.", e, stackTrace);
   }
       

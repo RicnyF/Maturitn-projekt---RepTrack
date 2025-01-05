@@ -23,17 +23,8 @@ class FirestoreService{
   Future<DocumentSnapshot> getDocumentById(String collection, String id) {
   return FirebaseFirestore.instance.collection(collection).doc(id).get();
 }
-   //update
-  /* Future<void> updateNote(String docID, String newNote){
-    return notes.doc(docID).update({
-      'note':newNote,
-      'timestamp':Timestamp.now(),
-    });
-   }*/
-
-    Future<void> deleteNote(String docID){
-    return exercises.doc(docID).delete();
-   }
+  
+    
    Future<void> deleteRoutine(String docID){
     return routines.doc(docID).delete();
    } 

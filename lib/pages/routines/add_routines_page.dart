@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:rep_track/components/my_textfield.dart';
 import 'package:rep_track/helper/helper_functions.dart';
@@ -374,6 +375,7 @@ weightControllers.putIfAbsent(id, () => {});
                       onChanged: (value) {
                         setsPerExercise[id]![index]["weight"] = value;
                       },
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -395,6 +397,7 @@ weightControllers.putIfAbsent(id, () => {});
                       onChanged: (value) {
                         setsPerExercise[id]![index]["reps"] = value;
                       },
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
