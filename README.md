@@ -1,10 +1,10 @@
-### **Aplikace pro sledování tréninků ve fitness**
+# **Aplikace pro sledování tréninků ve fitness**
 
 Tato aplikace je určena pro všechny, kteří chtějí mít přehled o svých trénincích, sledovat svůj pokrok a mít možnost si jednoduše plánovat nové tréninky. Umožňuje uživatelům spravovat své rutiny, vytvářet vlastní cvičební plány a sledovat detailní statistiky jednotlivých cviků. Aplikace je vhodná jak pro začátečníky, tak pro zkušené sportovce, kteří chtějí optimalizovat své tréninkové postupy.
 
 ---
 
-### **Funkcionality**
+# **Funkcionality**
 
 - **Úvodní stránka s přepínáním:** Obsahuje dolní navigační lištu pro přepínání mezi stránkami *"Přátelé"*, *"Přidat trénink"* a *"Profil"*.
 - **Přidání tréninku:** Možnost výběru mezi prázdným tréninkem, rutinami a jednotlivými cviky. Uživatel může pojmenovat trénink, přidávat cviky, nastavovat opakování a váhy.
@@ -16,7 +16,7 @@ Tato aplikace je určena pro všechny, kteří chtějí mít přehled o svých t
 
 ---
 
-### **Technologie**
+# **Technologie**
 
 - **Flutter** – framework pro rychlý multiplatformní vývoj moderních mobilních aplikací s jednoduchou a přehlednou syntaxí.
 - **Firebase** – slouží k autentizaci uživatelů a správě dat v reálném čase.
