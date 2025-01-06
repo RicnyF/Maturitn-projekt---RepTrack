@@ -30,10 +30,12 @@ Tato aplikace je určena pro všechny, kteří chtějí mít přehled o svých t
 
 # Reference:
 
-- https://www.youtube.com/watch?v=0RWLaJxW7Oc&t=1364s
-- https://www.youtube.com/watch?v=qlVj-0vpaW0
-- https://www.youtube.com/watch?v=j_rCDc_X-k8&list=PL4cUxeGkcC9giLVXCHSQmWqlHc9BLXdVx
-- https://www.youtube.com/watch?v=QGqMJzywasg&list=PL4cUxeGkcC9iVGY3ppchN9kIauln8IiEh
-- https://www.youtube.com/watch?v=9zdvmgGsww0&list=PL4cUxeGkcC9jERUGvbudErNCeSZHWUVlb
+- https://www.youtube.com/watch?v=0RWLaJxW7Oc&t=1364s - Firebase databaze
+- https://www.youtube.com/watch?v=qlVj-0vpaW0 - Přihlášení přes email
+- https://docs.flutter.dev/ - Flutter dokumentace
+- https://www.youtube.com/watch?v=Sp4_2zi0kZg - Password reset
+- https://www.youtube.com/watch?v=j_rCDc_X-k8&list=PL4cUxeGkcC9giLVXCHSQmWqlHc9BLXdVx - Flutter crash course
+- https://www.youtube.com/watch?v=QGqMJzywasg&list=PL4cUxeGkcC9iVGY3ppchN9kIauln8IiEh - Dart crash course
+- https://www.youtube.com/watch?v=9zdvmgGsww0&list=PL4cUxeGkcC9jERUGvbudErNCeSZHWUVlb - Firebase crash course
 - https://codelabs.developers.google.com/codelabs/flutter-codelab-first#3 - zakládání projektu a první Flutter aplikace
 - https://fonts.google.com/icons - ikony pro flutter
