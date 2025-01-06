@@ -24,32 +24,37 @@ class _LoginPageState extends State<LoginPage> {
 
   //login method
   void login() async{
-    // loading circle
+    /*logger*/
     AppLogger.logInfo("Attempting to login...");
-
+    /*Načítací kolečko*/ 
     showDialog(context: context, builder: (context)=> const Center(
       child: CircularProgressIndicator(),
     )
     );
-    // check if fields are blank
+    // kontrola jestli jsou kontrolery prazdny
     if(emailController.text.isEmpty || passwordController.text.isEmpty){
       if(mounted){
+      //konec načítání
       Navigator.pop(context);
+      //napíše chybu uživateli
       displayMessageToUser("All fields must be filled", context);}
     }
     else{
-    //try sign in
+    //zkusi se prihlasit
     try {
+     // pokus o prihlaseni s emailem a heslem
      await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text, 
      password: passwordController.text);
-    // pop loading circle
+    // konec nacitani
       if (mounted) Navigator.pop(context);
+      // oznameni loggerem do konzole
       AppLogger.logInfo("Logged in successfully.");
 
   }
+  // reseni chyb
   on FirebaseAuthException catch (e, stackTrace){
     if (mounted) {
-    
+    //vypise danou chybu uzivateli a do loggeru
     displayMessageToUser(e.message.toString(), context);
         AppLogger.logError("Failed to login.", e, stackTrace);
 

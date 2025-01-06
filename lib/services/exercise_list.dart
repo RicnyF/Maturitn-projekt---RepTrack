@@ -43,7 +43,7 @@ class _ExerciseListState extends State<ExerciseList> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: firestoreService.getExercisesStream(),
+      stream: firestoreService.getStream("Exercises"),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -52,17 +52,18 @@ class _ExerciseListState extends State<ExerciseList> {
           return Center(child: Text("Error: ${snapshot.error}"));
         }
         if (snapshot.hasData) {
+          /*Dotaz na získání informacích o cviku*/
           final List<DocumentSnapshot> exercisesList = snapshot.data!.docs.where((doc) {
             final data = doc.data() as Map<String, dynamic>;
-            final createdBy = data['createdBy'] as String?;
-            final type = data['type'] as String?;
+            final createdBy = data['createdBy'];
+            final type = data['type'];
 
-            // Admin user sees everything
+            // admin vidí všechny cviky
             if (currentUser?.email == "admin@admin.cz") {
               return true;
             }
 
-            // Regular users see only their exercises or predefined ones
+            // Uživatelé vidí jen cviky, které vytvořili nebo pokud jsou před definované
             return createdBy == currentUser?.uid || type == "predefined";
           }).toList();
 
