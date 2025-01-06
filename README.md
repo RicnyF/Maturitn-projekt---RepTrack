@@ -21,7 +21,5 @@ Tato aplikace je určena pro všechny, kteří chtějí mít přehled o svých t
 - **Flutter** – framework pro rychlý multiplatformní vývoj moderních mobilních aplikací s jednoduchou a přehlednou syntaxí.
 - **Firebase** – slouží k autentizaci uživatelů a správě dat v reálném čase.
 - **Cloud Firestore** – cloudová NoSQL databáze pro ukládání tréninků, rutin a uživatelských profilů.
-- **Table Calendar** – knihovna použitá pro kalendářové zobrazení tréninků, která umožňuje snadné prohlížení a výběr konkrétních dnů s tréninkem.
-- **REST API** – možné rozšíření pro získávání předpřipravených cvičebních plánů nebo fitness statistik. 
 
 Aplikace klade důraz na jednoduché ovládání, moderní design a přizpůsobitelnost podle preferencí uživatele.
