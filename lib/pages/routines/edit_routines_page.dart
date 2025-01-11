@@ -37,8 +37,6 @@ class _EditRoutinesPageState extends State<EditRoutinesPage> {
   final User? currentUser = FirebaseAuth.instance.currentUser;
   DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
   
- @protected
-@mustCallSuper
 @override
 void initState() {
   super.initState();
@@ -124,6 +122,13 @@ void initState() {
   void resetRoutine() {
     setState(() {
       selectedExercises.clear();
+      exerciseDetails.clear();
+      selectedTypes.clear();
+      restTimers.clear();
+      for (var controller in noteControllers.values) {
+        controller.dispose();
+      }
+      noteControllers.clear();
       exerciseDetails.clear();
       selectedTypes.clear();
       restTimers.clear();
@@ -281,7 +286,11 @@ checkKeys();
       },
     );
   }
-
+@override
+    void dispose() {
+    resetRoutine();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
    

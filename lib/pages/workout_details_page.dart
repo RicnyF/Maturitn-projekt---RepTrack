@@ -171,6 +171,7 @@ SizedBox(width: 20,),
                                               routineSelectedExercises: widget.workoutData['exercises']
                                                   .map<String>((exercise) => exercise['id'] as String)
                                                   .toList(),
+                                              
                                               routineNoteControllers: {
                                                 for (var exercise in widget.workoutData['exercises'])
                                                   exercise['id']: TextEditingController(text: exercise['notes'] ?? ""),

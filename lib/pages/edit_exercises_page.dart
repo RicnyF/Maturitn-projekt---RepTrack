@@ -186,8 +186,16 @@ void edit() async{
     nameController.text = widget.exerciseData['name'];
     
   }
-
-      
+@override
+    void dispose() {
+    imageUrl = "";
+    typeController.dispose;
+    muscleGroupController.dispose;
+    equipmentController.dispose;
+    muscleController.dispose;
+    nameController.dispose;
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

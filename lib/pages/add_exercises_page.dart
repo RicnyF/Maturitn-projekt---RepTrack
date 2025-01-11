@@ -82,6 +82,8 @@ void submit() async{
     imageUrl = await imageRef.getDownloadURL();
     }
       if(mounted)Navigator.pop(context);
+       print(currentUser?.email);
+       print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
       try{
         /* Uložení do databáze*/
         await FirebaseFirestore.instance.collection("Exercises").doc(exerciseId).set({
@@ -91,6 +93,7 @@ void submit() async{
         'muscleGroup': muscleGroupController.text,
         'muscles' : muscleController.text,
         /*Typ určuje jestli má být viditelný pro všechny nebo jen pro daného uživatele */
+       
         'type': currentUser?.email =="admin@admin.cz" ?"predefined":"custom",
         'createdBy': currentUser?.uid,
         'imageUrl': imageUrl,
@@ -112,7 +115,15 @@ void submit() async{
       
     }
     
-      
+      @override
+    void dispose() {
+    typeController.dispose();
+    muscleGroupController.dispose();
+    equipmentController.dispose();
+    muscleController.dispose();
+    nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -20,7 +20,12 @@ class _WorkoutPageState extends State<WorkoutPage> {
   final TextEditingController textController= TextEditingController();
  
  
-
+@override
+    void dispose() {
+      
+    textController.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

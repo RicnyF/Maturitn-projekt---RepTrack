@@ -214,7 +214,12 @@ class _AddRoutinesPageState extends State<AddRoutinesPage> {
       },
     );
   }
-
+@override
+    void dispose() {
+      
+    resetRoutine();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

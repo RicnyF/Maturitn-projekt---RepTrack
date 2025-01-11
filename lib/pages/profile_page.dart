@@ -293,143 +293,148 @@ Provider.of<ThemeProvider>(context, listen: false)
         ),  
         backgroundColor: Theme.of(context).colorScheme.surface,
         body: 
-      FutureBuilder(
-          future: Future.wait([
-          firestore.getUserDetails(currentUser),
-        ]),
- 
-        builder: (context,snapshot){
-          
-          //loading
-          if(snapshot.connectionState== ConnectionState.waiting){
-            return const Center(child: CircularProgressIndicator(),);
-
-          }
-          //error
-          else if(snapshot.hasError){
-            return Text("Error: ${snapshot.error}");
-          }
-          //data received
-          else if (snapshot.hasData){
-           
-            final user = snapshot.data![0];
-
-            
-            return Center(
-              child: Column(children: [
-                
-                
-                  
-                Photos(imageUrl: imageUrl,height: 150, width: 150,),
-                
-                
-                Text(capitalizeFirstLetter(user['username']),style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25),),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(width: 50,),
-                    MyBoldText(text: "User Email: "),
-                    Text(user['email']),
-                  ],
-                  
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(width: 50,),
-                    MyBoldText(text: "Username:  "),
-                    Text(user['username']),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(width: 50,),
-                    MyBoldText(text: "Date of birth:  "),
-                    Text(user['birthDate']),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(width: 50,),
-                    MyBoldText(text: "Account created:  "),
-                    Text(user['createdAt']),
-
-                  ],
-                ),
-                SizedBox(
-                  width: 350,
-                  height: 400,
-                  child:
-                   ValueListenableBuilder<DateTime>(
-    valueListenable: _selectedDayNotifier,
-    builder: (context, selectedDay, child) {
-      return TableCalendar(
-  focusedDay: selectedDay,
-  firstDay: DateTime(2000, 0, 0),
-  lastDay: DateTime.now(),
-  
-
-  selectedDayPredicate: (day) => isSameDay(day, selectedDay),
-  eventLoader:(day){
-                    return events[DateTime(day.year,day.month,day.day)]?? [];
-                  },
- onDaySelected: (selectedDay, focusedDay) {
+     Center(
+          child: SingleChildScrollView(
+            child: FutureBuilder(
+                future: Future.wait([
+                firestore.getUserDetails(currentUser),
+              ]),
              
-                _selectedDayNotifier.value = selectedDay;
-              
-
-              final onlyDate = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
-              final workouts = events[onlyDate] ?? [];
-
-              if(workouts.isEmpty){
-               return;
-              }
-              if (workouts.length == 1 ) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => WorkoutDetailsPage(
-                      workoutId: workouts[0]["workoutId"],
-                      workoutData: workouts[0],
-                    ),
-                  ),
-                );
-              } else if(workouts.isNotEmpty){
-                _showWorkoutChoiceDialog(context, workouts);
-              }
-              _selectedDayNotifier.value = DateTime.now();
-    
- 
-            },
-  calendarStyle: CalendarStyle(
-    
-    markerDecoration: BoxDecoration(color: Color.fromARGB(255, 141, 141, 141), shape: BoxShape.circle),defaultTextStyle: TextStyle(color: Theme.of(context).colorScheme.inverseSurface),weekendTextStyle: TextStyle(color: Theme.of(context).colorScheme.inverseSurface),disabledTextStyle: TextStyle(color: Colors.grey)),
-  headerStyle: HeaderStyle(
-          formatButtonVisible: false,
-          titleCentered: true,
-          
-          titleTextFormatter: (date, locale) {
+              builder: (context,snapshot){
+                
+                //loading
+                if(snapshot.connectionState== ConnectionState.waiting){
+                  return const Center(child: CircularProgressIndicator(),);
             
-            return DateFormat('yyyy MMMM').format(date);
-          },
-          titleTextStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-)
-
-;
-             })   ),
-                ],
+                }
+                //error
+                else if(snapshot.hasError){
+                  return Text("Error: ${snapshot.error}");
+                }
+                //data received
+                else if (snapshot.hasData){
+                 
+                  final user = snapshot.data![0];
+            
+                  
+                  return Center(
+                    child: Column(children: [
+                      
+                      
+                        
+                      Photos(imageUrl: imageUrl,height: 130, width: 130,),
+                      
+                      
+                      Text(capitalizeFirstLetter(user['username']),style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25),),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(width: 50,),
+                          MyBoldText(text: "User Email: "),
+                          Text(user['email']),
+                        ],
+                        
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(width: 50,),
+                          MyBoldText(text: "Username:  "),
+                          Text(user['username']),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(width: 50,),
+                          MyBoldText(text: "Date of birth:  "),
+                          Text(user['birthDate']),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(width: 50,),
+                          MyBoldText(text: "Account created:  "),
+                          Text(user['createdAt']),
+            
+                        ],
+                      ),
+                      SizedBox(
+                        width: 350,
+                        height: 400,
+                        child:
+                         ValueListenableBuilder<DateTime>(
+                valueListenable: _selectedDayNotifier,
+                builder: (context, selectedDay, child) {
+            return TableCalendar(
+              focusedDay: selectedDay,
+              firstDay: DateTime(2000, 0, 0),
+              lastDay: DateTime.now(),
+              
+            
+              selectedDayPredicate: (day) => isSameDay(day, selectedDay),
+              eventLoader:(day){
+                          return events[DateTime(day.year,day.month,day.day)]?? [];
+                        },
+             onDaySelected: (selectedDay, focusedDay) {
+                   
+                      _selectedDayNotifier.value = selectedDay;
+                    
+            
+                    final onlyDate = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
+                    final workouts = events[onlyDate] ?? [];
+            
+                    if(workouts.isEmpty){
+                     return;
+                    }
+                    if (workouts.length == 1 ) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => WorkoutDetailsPage(
+                            workoutId: workouts[0]["workoutId"],
+                            workoutData: workouts[0],
+                          ),
+                        ),
+                      );
+                    } else if(workouts.isNotEmpty){
+                      _showWorkoutChoiceDialog(context, workouts);
+                    }
+                    _selectedDayNotifier.value = DateTime.now();
+                
+             
+                  },
+              calendarStyle: CalendarStyle(
+                
+                markerDecoration: BoxDecoration(color: Color.fromARGB(255, 141, 141, 141), shape: BoxShape.circle),defaultTextStyle: TextStyle(color: Theme.of(context).colorScheme.inverseSurface),weekendTextStyle: TextStyle(color: Theme.of(context).colorScheme.inverseSurface),disabledTextStyle: TextStyle(color: Colors.grey)),
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+                
+                titleTextFormatter: (date, locale) {
+                  
+                  return DateFormat('yyyy MMMM').format(date);
+                },
+                titleTextStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-            );
-            }else {
-              return Text("No data");
-            }
-
-        }
-        )
+            )
+            
+            ;
+                   })   ),
+                      ],
+                    ),
+                  );
+                  }else {
+                    return Text("No data");
+                  }
+            
+              }
+              ),
+          ),
+        ),
+      
         
         );
       
