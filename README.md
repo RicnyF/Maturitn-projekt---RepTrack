@@ -4,6 +4,9 @@
 [![Framework](https://img.shields.io/badge/Framework-dart-blue)](https://dart.dev/)
 [![Database](https://img.shields.io/badge/Database-FireBase-orange)](https://firebase.google.com/)
 
+# Obhajoba video
+https://www.youtube.com/watch?si=8PVPzV3B5qToo-sn&v=zcJUJAXx2VQ
+
 # **Aplikace pro sledování tréninků ve fitness**
 
 Tato aplikace je určena pro všechny, kteří chtějí mít přehled o svých trénincích, sledovat svůj pokrok a mít možnost si jednoduše plánovat nové tréninky. Umožňuje uživatelům spravovat své rutiny, vytvářet vlastní cvičební plány a sledovat detailní statistiky jednotlivých cviků. Aplikace je vhodná jak pro začátečníky, tak pro zkušené sportovce, kteří chtějí optimalizovat své tréninkové postupy.
